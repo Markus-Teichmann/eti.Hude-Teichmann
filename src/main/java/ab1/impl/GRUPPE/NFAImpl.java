@@ -56,9 +56,11 @@ public class NFAImpl implements NFA {
     }
     @Override
     public void addAcceptingState(String state) throws FinalizedStateException {
-        /*
-        Hier fehlt auch noch die Fehlerbehandlung.
-         */
+
+        if(isFinalized()) {
+            throw new FinalizedStateException("Can't add accepting state to finalized automata");
+        }
+
         if(this.states.containsKey(state)) {
             this.states.get(state).setAcceptance(State.Acceptance.ACCEPTING);
         } else {
