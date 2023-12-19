@@ -39,9 +39,11 @@ public class NFAImpl implements NFA {
 
     @Override
     public void addTransition(Transition transition) throws FinalizedStateException {
-        /*
-        Hier fehlt noch die Fehlerbehandlung.
-         */
+
+        if(isFinalized()) {
+            throw new FinalizedStateException("Can't add transition to finalized automata");
+        }
+
         if(!(this.transitions.contains(transition))) {
             this.transitions.add(transition);
             if(!(this.states.containsKey(transition.fromState()))) {
@@ -52,7 +54,6 @@ public class NFAImpl implements NFA {
             }
         }
     }
-
     @Override
     public void addAcceptingState(String state) throws FinalizedStateException {
         /*
