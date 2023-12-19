@@ -36,6 +36,7 @@ public class NFAImpl implements NFA {
         return initialState.getName();
     }
 
+
     @Override
     public void addTransition(Transition transition) throws FinalizedStateException {
         /*
