@@ -1,6 +1,5 @@
 package ab1.impl.GRUPPE;
 
-<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -28,7 +27,4 @@ public class State {
     public Acceptance getAcceptence() {
         return this.acceptance;
     }
-=======
-public class State {
->>>>>>> 3f508f93a4ba0df1082ee0f83607a7a317144ba6
 }
