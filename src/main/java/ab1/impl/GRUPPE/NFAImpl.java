@@ -145,13 +145,16 @@ public class NFAImpl implements NFA {
         currentlyReachedStates.add(initialState.getName());
 
         while (word.length() > 0) {
+            // Liste für die nächsten erreichbaren Zustände
             List<String> newStates = new ArrayList<>();
 
             for (String state : currentlyReachedStates) {
+                // Erreibachre Zustände für das aktuelle Zeichen hinzufügen
                 newStates.addAll(getReachableStates(state, word.charAt(0)));
             }
 
             currentlyReachedStates = newStates;
+            // erste Zeichen des Worts entfernen
             word = word.substring(1);
         }
 
