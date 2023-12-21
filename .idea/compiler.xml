@@ -10,5 +10,8 @@
         <module name="ETI_Abgabe" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ETI_Abgabe" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>
