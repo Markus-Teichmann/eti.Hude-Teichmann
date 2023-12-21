@@ -70,8 +70,34 @@ public class NFAImpl implements NFA {
 
     @Override
     public NFA union(NFA other) throws FinalizedStateException {
+
+        // neuen NFA anlegen der später die Vereinigung enthält
+        NFA unionNFA = new NFAImpl("initialState");
+
+        // neuen Epsilonübergang anlegen zu den zu vereinigenden NFAs, als Epsilon wurde 'e' verwendet
+        Transition epsilonTransitionToNFAOne = new Transition(unionNFA.getInitialState(), 'e', this.getInitialState());
+        Transition epsilonTransitionToNFATwo = new Transition(unionNFA.getInitialState(), 'e', other.getInitialState());
+
+        // Epsilonübergang zu unionNFA hinzufügen
+        unionNFA.addTransition(epsilonTransitionToNFAOne);
+        unionNFA.addTransition(epsilonTransitionToNFATwo);
+
+        // Hinzufügen der States von den beiden NFAs zum unionNFA
+        for (Transition transitions : this.transitions){
+            unionNFA.addTransition(transitions);
+        }
+        Collection<String> otherStatesCollection = other.getStates();
+        Set<String> otherStates = new HashSet<>(otherStatesCollection);
+
+
+
+
+
+
         return null;
     }
+
+
 
     @Override
     public NFA intersection(NFA other) throws FinalizedStateException {
@@ -115,22 +141,30 @@ public class NFAImpl implements NFA {
 
     @Override
     public boolean acceptsWord(String word) {
-        List<String> currentlyReachedStates = new ArrayList<String>();
+        List<String> currentlyReachedStates = new ArrayList<>();
         currentlyReachedStates.add(initialState.getName());
-        while(word.length() > 0) {
-            for(String state : currentlyReachedStates) {
-                currentlyReachedStates.remove(state);
-                currentlyReachedStates.addAll(getReachableStates(state, word.charAt(0)));
+
+        while (word.length() > 0) {
+            List<String> newStates = new ArrayList<>();
+
+            for (String state : currentlyReachedStates) {
+                newStates.addAll(getReachableStates(state, word.charAt(0)));
             }
+
+            currentlyReachedStates = newStates;
             word = word.substring(1);
         }
-        for(String state : currentlyReachedStates) {
-            if(this.states.get(state).getAcceptence() == State.Acceptance.ACCEPTING) {
+
+        for (String state : currentlyReachedStates) {
+            if (this.states.get(state).getAcceptence() == State.Acceptance.ACCEPTING) {
                 return true;
             }
         }
+
         return false;
     }
+
+
 
     /*
     Diese Methode gibt alle von einem Startzustand über eine spezifische Kante erreichbare Knoten zurück.
