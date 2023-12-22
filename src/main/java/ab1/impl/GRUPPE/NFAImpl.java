@@ -9,9 +9,11 @@ import java.util.*;
 public class NFAImpl implements NFA {
     private final State initialState;
     private Map<String, State> unconnectedStates;
+    private Set<Transition> transitions;
     public NFAImpl(String initialStateName) {
         this.initialState = new State(initialStateName);
         this.unconnectedStates = new HashMap<String, State>();
+        this.transitions = new HashSet<Transition>();
     }
     private Set<State> states() {
         return initialState.getIterable(initialState, null, (State s) -> s.getNext());
@@ -70,6 +72,7 @@ public class NFAImpl implements NFA {
         if (isFinalized()) {
             throw new FinalizedStateException("Can't add transition to finalized automata");
         }
+        this.transitions.add(t);
         if (this.contains(t.fromState())) {
             State fromState = getState(t.fromState());
             fromState.addTransition(t.readSymbol(), getState(t.toState()));
@@ -117,6 +120,7 @@ public class NFAImpl implements NFA {
     }
     @Override
     public NFA complement() throws FinalizedStateException {
+        //Zuerst in DFA, dann in das Komplement des DFAs. Der ist ja selbst auch ein NFA.
         return null;
     }
     @Override
