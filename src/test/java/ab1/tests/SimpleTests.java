@@ -80,5 +80,55 @@ public class SimpleTests {
         assertEquals("START", instance.getInitialState());
     }
 
+    @Test
+    public void myFiniteTest() {
+        var instance = factory.buildNFA("START");
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('a')
+                        .fromState("START")
+                        .toState("S1")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('a')
+                        .fromState("S1")
+                        .toState("S2")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol(null)
+                        .fromState("S2")
+                        .toState("S3")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol(null)
+                        .fromState("S3")
+                        .toState("START")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol(null)
+                        .fromState("S3")
+                        .toState("S4")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol(null)
+                        .fromState("S4")
+                        .toState("S2")
+                        .build()
+        );
+        instance.addAcceptingState("S2");
+
+        instance.isFinite();
+    }
+
 
 }

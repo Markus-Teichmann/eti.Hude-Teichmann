@@ -14,10 +14,7 @@ public class NFAImpl implements NFA {
         this.unconnectedStates = new HashMap<String, State>();
     }
     private Set<State> states() {
-        Set<State> set = new HashSet<State>();
-        set.add(initialState);
-        set = initialState.getIterable(set, null, (State s) -> s.getNext());
-        return set;
+        return initialState.getIterable(initialState, null, (State s) -> s.getNext());
     }
     private boolean contains(String s) {
         return this.getStates().contains(s);
@@ -78,9 +75,7 @@ public class NFAImpl implements NFA {
             fromState.addTransition(t.readSymbol(), getState(t.toState()));
             if(unconnectedStates.containsKey(t.toState())) {
                 State toState = unconnectedStates.get(t.toState());
-                Set<State> set = new HashSet<State>();
-                set.add(toState);
-                set = toState.getIterable(set, null, (State s) -> s.getNext());
+                Set<State> set = toState.getIterable(toState, null, (State s) -> s.getNext());
                 for(State s : set) {
                     unconnectedStates.remove(s.getName(),s);
                 }
@@ -134,7 +129,25 @@ public class NFAImpl implements NFA {
     }
     @Override
     public boolean isFinite() {
-        return false;
+        List<State> duplicates = new ArrayList<State>();
+        duplicates.add(initialState);
+        initialState.getIterable(initialState, null, (State s) -> {
+            duplicates.addAll(s.getNext());
+            return s.getNext();
+        });
+        for(State s : states()) {
+            duplicates.remove(s);
+        }
+        Set<State> reachableAcceptingStates = new HashSet<State>();
+        for(State state : duplicates) {
+            state.getIterable(state, null, (State s) -> {
+               if(s.getAcceptence() == State.Acceptance.ACCEPTING) {
+                   reachableAcceptingStates.add(s);
+               }
+               return s.getNext();
+            });
+        }
+        return reachableAcceptingStates.isEmpty();
     }
     @Override
     public boolean acceptsWord(String word) {

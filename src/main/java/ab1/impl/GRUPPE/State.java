@@ -32,19 +32,25 @@ public class State {
                 Sollte c nicht null sein, so wird set.clear() ausgeführt, da nicht Epsilon-Kanten nicht optional sind.
                 Sie werden immer gegangen und wir verlassen den Ausgangsknoten, wenn wir dieser Kante folgen.
                 Somit kann der Ausgangsknoten nicht teil des nächsten Iterationsschritts sein und muss entfernt werden.
-        @param f ist eine Funktion die einen Parameter vom Typ State erwartet und ein Set<State> liefert.
+        @param getter ist eine Funktion die einen Parameter vom Typ State erwartet und ein Set<State> liefert.
                 Diese Methode f wird auf alle Ausgangsknoten angewendet. Die Idee ist, dass f die benachbarten Knoten
                 zurückgibt. Entweder abhängig von der Übergangskante oder eben auch beliebig.
      */
-    public Set<State> getIterable(Set<State> set, Character c, Function<State, Set<State>> f) {
+    public Set<State> getIterable(State state, Character c, Function<State, Set<State>> getter) {
+        Set<State> set = new HashSet<State>();
+        set.add(state);
+        return getIterable(set, c, getter);
+    }
+    public Set<State> getIterable(Set<State> set, Character c, Function<State, Set<State>> getter) {
         Set<State> roots = new HashSet<>(set);
         Set<State> leafs = new HashSet<>();
         int size;
         do {
             size = set.size();
             for(State s : roots) {
-                if(null != f.apply(s)) {
-                    leafs.addAll(f.apply(s));
+                Set<State> get = getter.apply(s);
+                if(get != null) {
+                    leafs.addAll(get);
                 }
             }
             roots.clear();
@@ -57,6 +63,9 @@ public class State {
         } while(set.size() > size);
         return set;
     }
+    /*
+        Diese Methode gibt alle Knoten zurück, die über jede beliebige Kannte direkt erreichbar sind. Also: .{1}
+     */
     public Set<State> getNext() {
         Set<State> set = new HashSet<State>();
         if(!this.next.isEmpty()){
@@ -66,6 +75,10 @@ public class State {
         }
         return set;
     }
+    /*
+        Diese Methode gibt alle über den Buchstaben c erreichbare Knoten zurück. Also eigentlich (e*ce*)
+        @param c ist dabei ein beliebiger Buchstabe aus dem Alphabet.
+     */
     public Set<State> getNext(Character c) {
         Set<State> set = new HashSet<State>();
         set.add(this);
