@@ -1,5 +1,7 @@
 package ab1.impl.GRUPPE;
 import java.util.*;
+import java.util.function.Function;
+
 public class State {
     private String name;
     public enum Acceptance {
@@ -29,56 +31,31 @@ public class State {
         }
         return new HashSet<State>();
     }
-    public Set<State> step(Character c) {
-        Set<State> set = new HashSet<State>();
-        set.add(this);
-        Set<State> roots = new HashSet<State>(set);
-        Set<State> leafs = new HashSet<State>();
+    public Set<State> getLeafs(Set<State> set, Character c, Function<State, Set<State>> f) {
+        Set<State> roots = new HashSet<>(set);
+        Set<State> leafs = new HashSet<>();
         int size;
         do {
             size = set.size();
             for(State s : roots) {
-                leafs.addAll(s.getNext(null));
+                leafs.addAll(f.apply(s));
             }
             roots.clear();
             roots.addAll(leafs);
+            if(c != null) {
+                set.clear();
+            }
             set.addAll(leafs);
             leafs.clear();
         } while(set.size() > size);
-        roots.clear();
-        roots.addAll(set);
-        for(State s : roots) {
-            leafs.addAll(s.getNext(c));
-        }
-        roots.clear();
-        roots.addAll(leafs);
-        set.clear();
-        set.addAll(leafs);
-        leafs.clear();
-        do {
-            size = set.size();
-            for(State s : roots) {
-                leafs.addAll(s.getNext(null));
-            }
-            roots.clear();
-            roots.addAll(leafs);
-            set.addAll(leafs);
-            leafs.clear();
-        } while(set.size() > size);
-        /*
-        System.out.println("Anzahl verschiedener Übergänge: " + this.next.size());
-        if(!this.next.isEmpty()) {
-            System.out.println("Gesuchter Buchstabe: " + c);
-            if (this.next.containsKey(c)) {
-                System.out.println("Anzahl der Knoten mit Buchstaben " + c + ": " + this.next.get(c).size());
-                set = this.next.get(c);
-            }
-            if (this.next.containsKey(null)) {
-                System.out.println("Anzahl der Knoten über Epsilon: " + this.next.get(null).size());
-                set.addAll(this.next.get(null));
-            }
-        }
-         */
+        return set;
+    }
+    public Set<State> step(Character c) {
+        Set<State> set = new HashSet<State>();
+        set.add(this);
+        set = this.getLeafs(set, null, (State s) -> s.getNext(null));
+        set = this.getLeafs(set, c, (State s) -> s.getNext(c));
+        set = this.getLeafs(set, null, (State s) -> s.getNext(null));
         return set;
     }
     public Set<State> getNext() {
@@ -93,19 +70,7 @@ public class State {
     public Set<State> getAllPossiblyFollowingStates() {
         Set<State> states = new HashSet<State>();
         states.add(this);
-        Set<State> leafs = new HashSet<State>();
-        Set<State> roots = new HashSet<State>(states); //Deep-Copy hier extrem wichtig.
-        int size;
-        do {
-            size = states.size();
-            for(State s : roots) {
-                leafs.addAll(s.getNext());
-            }
-            roots.clear(); //Deep-Copy hier extrem wichtig.
-            roots.addAll(leafs);
-            states.addAll(leafs);
-            leafs.clear();
-        } while(states.size() > size);
+        states = this.getLeafs(states, null, (State s) -> s.getNext());
         return states;
     }
     public void addTransition(Character c, State toState) {

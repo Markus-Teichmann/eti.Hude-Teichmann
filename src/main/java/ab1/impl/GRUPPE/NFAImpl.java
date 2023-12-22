@@ -130,37 +130,12 @@ public class NFAImpl implements NFA {
 
     @Override
     public boolean acceptsWord(String word) {
-        System.out.println("Wort: " + word);
-        System.out.println("Größe des Graphen: " + initialState.getAllPossiblyFollowingStates().size());
-        Set<State> roots = new HashSet<State>();
-        roots.add(initialState);
-        Set<State> leafs = new HashSet<State>();
-        while(word.length() > 0){ //Die Frage ist halt ob wir so sehr an der Wortlänge festhalten können, denn es gibt ja die Epsilon-Kanten.
-            System.out.println(word.charAt(0));
-            for(State state : roots) {
-                leafs.addAll(state.step(word.charAt(0)));
-            }
-            roots.clear(); // Achtung hier ist deep-copy sehr wichtig!
-            roots.addAll(leafs);
-            leafs.clear();
-            word = word.substring(1);
+        Set<State> set = new HashSet<>();
+        set.add(initialState);
+        for(Character c : word.toCharArray()) {
+            set = initialState.getLeafs(set, c, (State s) -> s.step(c));
         }
-        //Sprich hier müssen wir jetzt noch so lange weitermachen Epsilon-Kanten weiter zu gehen bis sich nichts mehr ändert...
-        /*
-        Set<State> states = new HashSet<State>(roots);
-        int size;
-        do {
-            size = states.size();
-            for(State state : roots) {
-                leafs.addAll(state.getNext(null));
-            }
-            roots.clear();
-            roots.addAll(leafs);
-            states.addAll(leafs);
-            leafs.clear();
-        } while(states.size() > size);
-         */
-        for(State state : roots) {
+        for(State state : set) {
             if(state.getAcceptence() == State.Acceptance.ACCEPTING) {
                 return true;
             }
