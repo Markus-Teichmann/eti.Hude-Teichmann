@@ -10,7 +10,6 @@ public class State {
     }
     private Acceptance acceptance;
     private Map<Character,Set<State>> next;
-
     public State(String name) {
         this.name = name;
         this.acceptance = Acceptance.DENYING;
@@ -25,20 +24,28 @@ public class State {
     public Acceptance getAcceptence() {
         return this.acceptance;
     }
-    public Set<State> getNext(Character c) {
-        if(this.next.containsKey(c)) {
-            return this.next.get(c);
-        }
-        return new HashSet<State>();
-    }
-    public Set<State> getLeafs(Set<State> set, Character c, Function<State, Set<State>> f) {
+    /*
+        Diese Methode ermöglicht es von einem oder mehreren Knoten über alle sich ergebenden Folgeknoten zu iterieren.
+
+        @param set enthält den einen oder die mehreren Ausgangsknoten.
+        @param c beschreibt den Buchstaben der Übergangsfunktion. null ist dabei die Epsilon-Kante.
+                Sollte c nicht null sein, so wird set.clear() ausgeführt, da nicht Epsilon-Kanten nicht optional sind.
+                Sie werden immer gegangen und wir verlassen den Ausgangsknoten, wenn wir dieser Kante folgen.
+                Somit kann der Ausgangsknoten nicht teil des nächsten Iterationsschritts sein und muss entfernt werden.
+        @param f ist eine Funktion die einen Parameter vom Typ State erwartet und ein Set<State> liefert.
+                Diese Methode f wird auf alle Ausgangsknoten angewendet. Die Idee ist, dass f die benachbarten Knoten
+                zurückgibt. Entweder abhängig von der Übergangskante oder eben auch beliebig.
+     */
+    public Set<State> getIterable(Set<State> set, Character c, Function<State, Set<State>> f) {
         Set<State> roots = new HashSet<>(set);
         Set<State> leafs = new HashSet<>();
         int size;
         do {
             size = set.size();
             for(State s : roots) {
-                leafs.addAll(f.apply(s));
+                if(null != f.apply(s)) {
+                    leafs.addAll(f.apply(s));
+                }
             }
             roots.clear();
             roots.addAll(leafs);
@@ -50,14 +57,6 @@ public class State {
         } while(set.size() > size);
         return set;
     }
-    public Set<State> step(Character c) {
-        Set<State> set = new HashSet<State>();
-        set.add(this);
-        set = this.getLeafs(set, null, (State s) -> s.getNext(null));
-        set = this.getLeafs(set, c, (State s) -> s.getNext(c));
-        set = this.getLeafs(set, null, (State s) -> s.getNext(null));
-        return set;
-    }
     public Set<State> getNext() {
         Set<State> set = new HashSet<State>();
         if(!this.next.isEmpty()){
@@ -67,11 +66,13 @@ public class State {
         }
         return set;
     }
-    public Set<State> getAllPossiblyFollowingStates() {
-        Set<State> states = new HashSet<State>();
-        states.add(this);
-        states = this.getLeafs(states, null, (State s) -> s.getNext());
-        return states;
+    public Set<State> getNext(Character c) {
+        Set<State> set = new HashSet<State>();
+        set.add(this);
+        set = this.getIterable(set, null, (State s) -> s.next.get(null));
+        set = this.getIterable(set, c, (State s) -> s.next.get(c));
+        set = this.getIterable(set, null, (State s) -> s.next.get(null));
+        return set;
     }
     public void addTransition(Character c, State toState) {
         if(this.next.containsKey(c)) {
