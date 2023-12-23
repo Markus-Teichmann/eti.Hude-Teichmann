@@ -18,6 +18,15 @@ public class State {
     public void setAcceptance(Acceptance acceptance) {
         this.acceptance = acceptance;
     }
+    public void addTransition(Character c, State toState) {
+        if(this.next.containsKey(c)) {
+            this.next.get(c).add(toState);
+        } else {
+            Set<State> states = new HashSet<State>();
+            states.add(toState);
+            this.next.put(c, states);
+        }
+    }
     public String getName() {
         return this.name;
     }
@@ -76,24 +85,29 @@ public class State {
         return set;
     }
     /*
-        Diese Methode gibt alle über den Buchstaben c erreichbare Knoten zurück. Also eigentlich (e*ce*)
+        Diese Methode gibt alle über das Wor e*ce* erreichbare Knoten zurück.
+        Daher wird hier auch String als Datentyp verwendet, weil es sich eigentlich um ein Wort handelt.
         @param c ist dabei ein beliebiger Buchstabe aus dem Alphabet.
      */
-    public Set<State> getNext(Character c) {
+    public Set<State> getNext(String c) {
         Set<State> set = new HashSet<State>();
         set.add(this);
         set = this.getIterable(set, null, (State s) -> s.next.get(null));
-        set = this.getIterable(set, c, (State s) -> s.next.get(c));
+        set = this.getIterable(set, c.charAt(0), (State s) -> s.next.get(c.charAt(0)));
         set = this.getIterable(set, null, (State s) -> s.next.get(null));
         return set;
     }
-    public void addTransition(Character c, State toState) {
-        if(this.next.containsKey(c)) {
-            this.next.get(c).add(toState);
-        } else {
-            Set<State> states = new HashSet<State>();
-            states.add(toState);
-            this.next.put(c, states);
-        }
+    /*
+        Diese Methode gibt alle über den Buchstaben c erreichbare Knoten zurück.
+        @param c ist ein beliebiger Buchstabe aus dem Alphabet.
+     */
+    public Set<State> getNext(Character c) {
+        return this.next.get(c);
+    }
+    /*
+        Diese Methode gibt alle von möglichen Pfade zurück.
+     */
+    public Set<Character> getTransitions() {
+        return next.keySet();
     }
 }

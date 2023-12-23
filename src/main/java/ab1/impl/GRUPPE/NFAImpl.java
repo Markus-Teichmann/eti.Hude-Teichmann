@@ -37,6 +37,27 @@ public class NFAImpl implements NFA {
         this.unconnectedStates.put(name, new State(name));
         return unconnectedStates.get(name);
     }
+    /*
+        Diese Methode gibt eine Deep-Copy des aktuellen NFA's zurück.
+     */
+    public NFAImpl clone() {
+        NFAImpl clone = new NFAImpl(initialState.getName());
+        for(Transition t : transitions) {
+            clone.addTransition(t);
+        }
+        for(String state : getAcceptingStates()) {
+            clone.addAcceptingState(state);
+        }
+        if(getStates().size() > clone.getStates().size()) {
+            Set<String> states = new HashSet<String>();
+            states.addAll(getStates());
+            states.removeAll(clone.getStates());
+            for(String state : states) {
+                clone.addAcceptingState(state);
+            }
+        }
+        return clone;
+    }
     @Override
     public Set<String> getStates() {
         Set<String> strings = new HashSet<String>();
@@ -158,7 +179,7 @@ public class NFAImpl implements NFA {
         Set<State> set = new HashSet<>();
         set.add(initialState);
         for(Character c : word.toCharArray()) {
-            set = initialState.getIterable(set, c, (State s) -> s.getNext(c));
+            set = initialState.getIterable(set, c, (State s) -> s.getNext(c.toString()));
         }
         for(State state : set) {
             if(state.getAcceptence() == State.Acceptance.ACCEPTING) {
