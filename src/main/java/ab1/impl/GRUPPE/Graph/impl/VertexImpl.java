@@ -137,5 +137,13 @@ public class VertexImpl implements Vertex {
             return super.equals(o);
         }
     }
+    @Override
+    public int hashCode() {
+        return 0;
+    }
+    @Override
+    public String toString() {
+        return name;
+    }
 
 }

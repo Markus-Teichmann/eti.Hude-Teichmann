@@ -107,7 +107,7 @@ public class SimpleTests {
                 Transition.builder()
                         .readSymbol(null)
                         .fromState("S3")
-                        .toState("START")
+                        .toState("S2")
                         .build()
         );
         instance.addTransition(
@@ -120,8 +120,8 @@ public class SimpleTests {
         instance.addTransition(
                 Transition.builder()
                         .readSymbol(null)
-                        .fromState("S4")
-                        .toState("S2")
+                        .fromState("S5")
+                        .toState("S6")
                         .build()
         );
         instance.addAcceptingState("S2");

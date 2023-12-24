@@ -157,8 +157,17 @@ public class GraphImpl implements Graph {
         if(!contains(edge)) {
             edge.getStartVertex().addNext(edge.getTransition(), edge.getEndVertex());
             edge.getEndVertex().addPrev(edge.getTransition(), edge.getStartVertex());
-            if(unconnected != null) {
-                remove(getSubGraph(edge.getEndVertex()));
+            if(!contains(edge.getStartVertex())) {
+                if(unconnected == null) {
+                    unconnected = new HashSet<>();
+                }
+                unconnected.add(new GraphImpl(edge.getStartVertex()));
+            } else if(unconnected != null) {
+                for(Graph g : unconnected) {
+                    if (g.contains(edge.getEndVertex())) {
+                        remove(getSubGraph(edge.getEndVertex()));
+                    }
+                }
             }
         }
     }
@@ -201,7 +210,12 @@ public class GraphImpl implements Graph {
     }
     @Override
     public Collection<Vertex> getConnected(Collection<Vertex> vertices) {
-        return iterate(vertices, Vertex::getNext, (Vertex v) -> v);
+        Collection<Vertex> connected = new HashSet<>();
+        Collection<Collection<Vertex>> collections = iterate(vertices, Vertex::getNext, (Vertex v) -> v.getNext());
+        for(Collection<Vertex> collection : collections) {
+            connected.addAll(collection);
+        }
+        return connected;
     }
     @Override
     public Graph getSubGraph(Vertex v) {
@@ -231,14 +245,20 @@ public class GraphImpl implements Graph {
     @Override
     public Collection<Vertex> getLeafs(String string) {
         Collection<Vertex> roots = new HashSet<>(start);
+        Collection<Vertex> leafs = new HashSet<>();
         for(int i=0; i<string.length(); i++) {
             int size;
             do {
                 size = roots.size();
                 roots.addAll(iterate(roots,(Vertex v) -> v.getNext(null), (Vertex v) -> v));
             } while(size < roots.size());
-            char c = string.charAt(i);
-            Collection<Vertex> leafs = iterate(roots,(Vertex v) -> v.getNext(c), (Vertex v) -> v);
+            for(Vertex v : roots) {
+                if(v.getNext(string.charAt(i)) == null) {
+                    leafs.remove(v);
+                } else {
+                    leafs.addAll(v.getNext(string.charAt(i)));
+                }
+            }
             do {
                 size = leafs.size();
                 leafs.addAll(iterate(leafs, (Vertex v) -> v.getNext(null), (Vertex v) -> v));

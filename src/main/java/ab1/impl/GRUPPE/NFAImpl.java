@@ -124,7 +124,6 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public boolean isFinite() {
-        //GetConnected scheint mir hier nicht richtig zu sein.
         Set<State> poi = new HashSet<>();
         for(State s : states()) {
             if(getConnected(s).contains(s)) {
@@ -134,15 +133,18 @@ public class NFAImpl extends GraphImpl implements NFA {
         for(State s : poi) {
             for(Vertex v : getConnected(s)) {
                 if (((State) v).getAcceptence() == State.Acceptance.ACCEPTING) {
-                    return true;
+                    return false;
                 }
             }
         }
-        return false;
+        return true;
     }
     @Override
     public boolean acceptsWord(String word) {
         for(Vertex v : getLeafs(word)) {
+            if(v.getPrev() == null) {
+                return false;
+            }
             if(((State) v).getAcceptence() == State.Acceptance.ACCEPTING) {
                 return true;
             }

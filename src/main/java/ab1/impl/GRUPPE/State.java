@@ -18,4 +18,8 @@ public class State extends VertexImpl {
     public Acceptance getAcceptence() {
         return this.acceptance;
     }
+    @Override
+    public String toString() {
+        return super.toString() + ": " + acceptance;
+    }
 }

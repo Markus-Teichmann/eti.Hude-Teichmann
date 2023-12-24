@@ -28,6 +28,7 @@ public class EdgeImpl implements Edge {
     public Vertex getEndVertex() {
         return this.end;
     }
+    @Override
     public boolean equals(Object o) {
         if(o instanceof Edge) {
             return ((Edge) o).getStartVertex().getName().equals(this.start.getName()) &&
@@ -36,5 +37,13 @@ public class EdgeImpl implements Edge {
         } else {
             return super.equals(o);
         }
+    }
+    @Override
+    public int hashCode() {
+        return 0;
+    }
+    @Override
+    public String toString() {
+        return start.getName() + " -" + transition + "-> " + end.getName();
     }
 }
