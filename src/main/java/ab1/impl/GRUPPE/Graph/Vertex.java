@@ -8,6 +8,11 @@ public interface Vertex {
     public Collection<Vertex> getPrev();
     public Collection<Vertex> getPrev(Character c);
     public String getName();
-    public void addNext(Character c, Vertex e);
-    public void addPrev(Character c, Vertex e);
+    public Collection<Character> getOutgoingEdges();
+    public Collection<Character> getIncommingEdges();
+    public void addNext(Character c, Vertex v);
+    public void addPrev(Character c, Vertex v);
+    public void removeNext(Character c, Vertex v);
+    public void removePrev(Character c, Vertex v);
+
 }
