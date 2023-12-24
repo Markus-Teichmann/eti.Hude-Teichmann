@@ -3,68 +3,50 @@ package ab1.impl.GRUPPE;
 import ab1.FinalizedStateException;
 import ab1.NFA;
 import ab1.Transition;
+import ab1.impl.GRUPPE.Graph.Edge;
+import ab1.impl.GRUPPE.Graph.Vertex;
+import ab1.impl.GRUPPE.Graph.impl.EdgeImpl;
+import ab1.impl.GRUPPE.Graph.impl.GraphImpl;
+import ab1.impl.GRUPPE.Graph.impl.VertexImpl;
 
 import java.util.*;
 
-public class NFAImpl implements NFA {
-    private final State initialState;
-    private Map<String, State> unconnectedStates;
-    private Set<Transition> transitions;
+public class NFAImpl extends GraphImpl implements NFA {
     public NFAImpl(String initialStateName) {
-        this.initialState = new State(initialStateName);
-        this.unconnectedStates = new HashMap<String, State>();
-        this.transitions = new HashSet<Transition>();
+        super(new State(initialStateName));
+    }
+    private boolean contains(String name) {
+        for(Vertex v : this.getVertices()) {
+            if(v.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
     private Set<State> states() {
-        return initialState.getIterable(initialState, null, (State s) -> s.getNext());
-    }
-    private boolean contains(String s) {
-        return this.getStates().contains(s);
-    }
-    private boolean contains(State s) {
-        return this.states().contains(s);
+        Set<State> states = new HashSet<>();
+        for(Vertex v : getVertices()) {
+            states.add((State) v);
+        }
+        return states;
     }
     private State getState(String name) {
-        if(this.contains(name)) {
-            for(State s : this.states()) {
-                if(s.getName().equals(name)) {
-                    return s;
-                }
-            }
-        } else if (unconnectedStates.containsKey(name)) {
-            return unconnectedStates.get(name);
+        if(getVertex(name) == null) {
+            return new State(name);
+        } else {
+            return (State) this.getVertex(name);
         }
-        this.unconnectedStates.put(name, new State(name));
-        return unconnectedStates.get(name);
     }
     /*
         Diese Methode gibt eine Deep-Copy des aktuellen NFA's zurück.
      */
     public NFAImpl clone() {
-        NFAImpl clone = new NFAImpl(initialState.getName());
-        for(Transition t : transitions) {
-            clone.addTransition(t);
-        }
-        for(String state : getAcceptingStates()) {
-            clone.addAcceptingState(state);
-        }
-        if(getStates().size() > clone.getStates().size()) {
-            Set<String> states = new HashSet<String>();
-            states.addAll(getStates());
-            states.removeAll(clone.getStates());
-            for(String state : states) {
-                clone.addAcceptingState(state);
-            }
-        }
-        return clone;
+        return null;
     }
     @Override
     public Set<String> getStates() {
         Set<String> strings = new HashSet<String>();
-        for(State s : this.states()){
-            strings.add(s.getName());
-        }
-        for(State s : unconnectedStates.values()) {
+        for(State s : states()) {
             strings.add(s.getName());
         }
         return strings;
@@ -77,45 +59,33 @@ public class NFAImpl implements NFA {
                 strings.add(state.getName());
             }
         }
-        for(State state : this.unconnectedStates.values()) {
-            if(state.getAcceptence() == State.Acceptance.ACCEPTING) {
-                strings.add(state.getName());
-            }
-        }
         return strings;
     }
     @Override
     public String getInitialState() {
-        return initialState.getName();
+        String states = "";
+        for(Vertex v : getStart()) {
+            states += v.getName() + " ";
+        }
+        return states.trim();
     }
     @Override
     public void addTransition(Transition t) throws FinalizedStateException {
         if (isFinalized()) {
             throw new FinalizedStateException("Can't add transition to finalized automata");
         }
-        this.transitions.add(t);
-        if (this.contains(t.fromState())) {
-            State fromState = getState(t.fromState());
-            fromState.addTransition(t.readSymbol(), getState(t.toState()));
-            if(unconnectedStates.containsKey(t.toState())) {
-                State toState = unconnectedStates.get(t.toState());
-                Set<State> set = toState.getIterable(toState, null, (State s) -> s.getNext());
-                for(State s : set) {
-                    unconnectedStates.remove(s.getName(),s);
-                }
-            }
-        } else if (this.unconnectedStates.containsKey(t.fromState())) {
-            unconnectedStates.get(t.fromState()).addTransition(t.readSymbol(),getState(t.toState()));
-        } else {
-            State fromState = getState(t.fromState());
-            State toState = getState(t.toState());
-            fromState.addTransition(t.readSymbol(), toState);
-        }
+        State start = getState(t.fromState());
+        State end = getState(t.toState());
+        Edge edge = new EdgeImpl(start, t.readSymbol(), end);
+        addEdge(edge);
     }
     @Override
     public void addAcceptingState(String name) throws FinalizedStateException {
-        if(isFinalized()) {
+        if (isFinalized()) {
             throw new FinalizedStateException("Can't add accepting state to finalized automata");
+        }
+        if(!contains(new State(name))) {
+            addVertex(new State(name));
         }
         this.getState(name).setAcceptance(State.Acceptance.ACCEPTING);
     }
@@ -154,35 +124,26 @@ public class NFAImpl implements NFA {
     }
     @Override
     public boolean isFinite() {
-        List<State> duplicates = new ArrayList<State>();
-        duplicates.add(initialState);
-        initialState.getIterable(initialState, null, (State s) -> {
-            duplicates.addAll(s.getNext());
-            return s.getNext();
-        });
+        //GetConnected scheint mir hier nicht richtig zu sein.
+        Set<State> poi = new HashSet<>();
         for(State s : states()) {
-            duplicates.remove(s);
+            if(getConnected(s).contains(s)) {
+                poi.add(s);
+            }
         }
-        Set<State> reachableAcceptingStates = new HashSet<State>();
-        for(State state : duplicates) {
-            state.getIterable(state, null, (State s) -> {
-               if(s.getAcceptence() == State.Acceptance.ACCEPTING) {
-                   reachableAcceptingStates.add(s);
-               }
-               return s.getNext();
-            });
+        for(State s : poi) {
+            for(Vertex v : getConnected(s)) {
+                if (((State) v).getAcceptence() == State.Acceptance.ACCEPTING) {
+                    return true;
+                }
+            }
         }
-        return reachableAcceptingStates.isEmpty();
+        return false;
     }
     @Override
     public boolean acceptsWord(String word) {
-        Set<State> set = new HashSet<>();
-        set.add(initialState);
-        for(Character c : word.toCharArray()) {
-            set = initialState.getIterable(set, c, (State s) -> s.getNext(c.toString()));
-        }
-        for(State state : set) {
-            if(state.getAcceptence() == State.Acceptance.ACCEPTING) {
+        for(Vertex v : getLeafs(word)) {
+            if(((State) v).getAcceptence() == State.Acceptance.ACCEPTING) {
                 return true;
             }
         }

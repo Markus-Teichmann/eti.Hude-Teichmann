@@ -10,6 +10,7 @@ public interface Graph {
     public boolean contains(Graph g);
     public void addVertex(Vertex v);
     public void addEdge(Edge edge);
+    public Collection<Vertex> getStart();
     public Collection<Vertex> getVertices();
     public Vertex getVertex(String name);
     public Collection<Edge> getEdges();

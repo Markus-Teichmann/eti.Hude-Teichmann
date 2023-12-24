@@ -16,9 +16,6 @@ public class GraphImpl implements Graph {
         start.add(v);
         unconnected = null;
     }
-    public GraphImpl(String name) {
-        this(new VertexImpl(name));
-    }
     public GraphImpl(Collection<Vertex> start) {
         this.start = start;
         unconnected = null;
@@ -27,7 +24,10 @@ public class GraphImpl implements Graph {
         Collection<T> values = new HashSet<T>();
         Collection<Vertex> roots = new HashSet<Vertex>(start);
         Collection<Vertex> leafs = new HashSet<Vertex>();
+        Collection<Vertex> set = new HashSet<Vertex>(start);
+        int size;
         do {
+            size = set.size();
             for(Vertex v : roots) {
                 Collection<Vertex> get = getter.apply(v);
                 if(get != null) {
@@ -40,16 +40,19 @@ public class GraphImpl implements Graph {
             }
             roots.clear();
             roots.addAll(leafs);
+            set.addAll(leafs);
             leafs.clear();
-        } while(!roots.isEmpty());
+        } while(size < set.size());
         return values;
     }
     private Collection<Edge> getForwardEdges() {
         Collection<Edge> edges = new HashSet<>();
         for(Vertex v : getVertices()) {
-            for (Character c : v.getOutgoingEdges()) {
-                for (Vertex vertex : v.getNext(c)) {
-                    edges.add(new EdgeImpl(v, c, vertex));
+            if(v.getOutgoingEdges() != null) {
+                for (Character c : v.getOutgoingEdges()) {
+                    for (Vertex vertex : v.getNext(c)) {
+                        edges.add(new EdgeImpl(v, c, vertex));
+                    }
                 }
             }
         }
@@ -58,21 +61,26 @@ public class GraphImpl implements Graph {
     private Collection<Edge> getBackwardEdges() {
         Collection<Edge> edges = new HashSet<>();
         for(Vertex v : getVertices()) {
-            for (Character c : v.getIncommingEdges()) {
-                for (Vertex vertex : v.getPrev(c)) {
-                    edges.add(new EdgeImpl(vertex, c, v));
+            if(v.getIncommingEdges() != null) {
+                for (Character c : v.getIncommingEdges()) {
+                    for (Vertex vertex : v.getPrev(c)) {
+                        edges.add(new EdgeImpl(vertex, c, v));
+                    }
                 }
             }
         }
         return edges;
     }
     @Override
+    public Collection<Vertex> getStart() {
+        return start;
+    }
+    @Override
     public Collection<Vertex> getVertices() {
         Collection<Vertex> connected = new HashSet<>();
-        if(unconnected == null) {
-            connected.addAll(start);
-            connected.addAll(getConnected(connected));
-        } else {
+        connected.addAll(start);
+        connected.addAll(getConnected(connected));
+        if(unconnected != null) {
             for(Graph g : unconnected) {
                 connected.addAll(g.getVertices());
             }
@@ -95,10 +103,26 @@ public class GraphImpl implements Graph {
     }
     @Override
     public boolean contains(Vertex v) {
+        /*
+        for(Vertex vertex : getVertices()) {
+            if(vertex.equals(v)) {
+                return true;
+            }
+        }
+        return false;
+         */
         return getVertices().contains(v);
     }
     @Override
     public boolean contains(Edge e) {
+        /*
+        for(Edge edge : getEdges()) {
+            if(edge.equals(e)) {
+                return true;
+            }
+        }
+        return false;
+         */
         return getEdges().contains(e);
     }
     @Override
@@ -122,6 +146,9 @@ public class GraphImpl implements Graph {
     @Override
     public void addVertex(Vertex v) {
         if(!contains(v)) {
+            if(unconnected == null) {
+                this.unconnected = new HashSet<>();
+            }
             unconnected.add(new GraphImpl(v));
         }
     }
@@ -131,9 +158,7 @@ public class GraphImpl implements Graph {
             edge.getStartVertex().addNext(edge.getTransition(), edge.getEndVertex());
             edge.getEndVertex().addPrev(edge.getTransition(), edge.getStartVertex());
             if(unconnected != null) {
-                Graph first = getSubGraph(edge.getStartVertex());
-                Graph second = getSubGraph(edge.getEndVertex());
-                remove(second);
+                remove(getSubGraph(edge.getEndVertex()));
             }
         }
     }

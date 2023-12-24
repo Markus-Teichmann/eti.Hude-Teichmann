@@ -129,5 +129,13 @@ public class VertexImpl implements Vertex {
             }
         }
     }
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof Vertex) {
+            return ((Vertex) o).getName().equals(name);
+        } else {
+            return super.equals(o);
+        }
+    }
 
 }

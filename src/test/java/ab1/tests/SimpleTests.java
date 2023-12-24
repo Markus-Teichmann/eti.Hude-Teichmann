@@ -5,8 +5,7 @@ import ab1.NFAProvider;
 import ab1.Transition;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleTests {
 
@@ -126,9 +125,6 @@ public class SimpleTests {
                         .build()
         );
         instance.addAcceptingState("S2");
-
-        instance.isFinite();
+        assertFalse(instance.isFinite());
     }
-
-
 }
