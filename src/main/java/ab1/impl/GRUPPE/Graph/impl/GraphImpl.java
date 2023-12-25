@@ -45,9 +45,9 @@ public class GraphImpl implements Graph {
         } while(size < set.size());
         return values;
     }
-    private Collection<Edge> getForwardEdges() {
+    private Collection<Edge> getForwardEdges(Collection<Vertex> vertices) {
         Collection<Edge> edges = new HashSet<>();
-        for(Vertex v : getVertices()) {
+        for(Vertex v : vertices) {
             if(v.getOutgoingEdges() != null) {
                 for (Character c : v.getOutgoingEdges()) {
                     for (Vertex vertex : v.getNext(c)) {
@@ -58,9 +58,9 @@ public class GraphImpl implements Graph {
         }
         return edges;
     }
-    private Collection<Edge> getBackwardEdges() {
+    private Collection<Edge> getBackwardEdges(Collection<Vertex> vertices) {
         Collection<Edge> edges = new HashSet<>();
-        for(Vertex v : getVertices()) {
+        for(Vertex v : vertices) {
             if(v.getIncommingEdges() != null) {
                 for (Character c : v.getIncommingEdges()) {
                     for (Vertex vertex : v.getPrev(c)) {
@@ -87,11 +87,14 @@ public class GraphImpl implements Graph {
         }
         return connected;
     }
+    private Collection<Edge> getEdges(Collection<Vertex> vertices) {
+        Collection<Edge> edges = getForwardEdges(vertices);
+        edges.addAll(getBackwardEdges(vertices));
+        return edges;
+    }
     @Override
     public Collection<Edge> getEdges() {
-        Collection<Edge> edges = getForwardEdges();
-        edges.addAll(getBackwardEdges());
-        return edges;
+        return getEdges(getVertices());
     }
     @Override
     public Collection<Character> getAlphabet() {
@@ -103,44 +106,25 @@ public class GraphImpl implements Graph {
     }
     @Override
     public boolean contains(Vertex v) {
-        /*
-        for(Vertex vertex : getVertices()) {
-            if(vertex.equals(v)) {
-                return true;
-            }
-        }
-        return false;
-         */
         return getVertices().contains(v);
     }
     @Override
     public boolean contains(Edge e) {
-        /*
-        for(Edge edge : getEdges()) {
-            if(edge.equals(e)) {
-                return true;
-            }
-        }
-        return false;
-         */
         return getEdges().contains(e);
     }
     @Override
     public boolean contains(Graph graph) {
-        if(unconnected == null) {
-            if(graph == this) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
+        if(this.equals(graph)) {
+            return true;
+        }
+        if(unconnected != null) {
             for(Graph g : unconnected) {
                 if(g.contains(graph)) {
                     return true;
                 }
             }
-            return false;
         }
+        return false;
     }
 
     @Override
@@ -219,7 +203,7 @@ public class GraphImpl implements Graph {
     }
     @Override
     public Graph getSubGraph(Vertex v) {
-        if(contains(v)) {
+        if(getConnected(start).contains(v)) {
             if(unconnected == null) {
                 return this;
             } else {
@@ -271,28 +255,42 @@ public class GraphImpl implements Graph {
     }
     @Override
     public Graph clone() {
-        Collection<Vertex> start = new HashSet<>(this.start);
-        Graph clone = new GraphImpl(start);
+        Collection<Vertex> vertices = new HashSet<>();
         for(Vertex v : getVertices()) {
-            clone.addVertex(new VertexImpl(v.getName()));
+            vertices.add(v.clone());
         }
+        Collection<Edge> edges = new HashSet<>();
         for(Edge e : getEdges()) {
+            Vertex start = null;
+            for(Vertex v : vertices) {
+                if(v.equals(e.getStartVertex())) {
+                    start = v;
+                }
+            }
+            Vertex end = null;
+            for(Vertex v : vertices) {
+                if(v.equals(e.getEndVertex())) {
+                    end = v;
+                }
+            }
+            edges.add(new EdgeImpl(start, e.getTransition(), end));
+        }
+        Collection<Vertex> start = new HashSet<>();
+        for(Vertex v : vertices) {
+            if(this.start.contains(v)) {
+                start.add(v);
+            }
+        }
+        Graph clone = new GraphImpl(start);
+        for(Edge e : edges) {
             clone.addEdge(e);
         }
         return clone;
     }
     @Override
     public void invert() {
-        Collection<Edge> forwardEdges = getForwardEdges();
-        Collection<Edge> backwardEdges = getBackwardEdges();
-        /*
-            start = iterate(start, Vertex::getNext, (Vertex v) -> {
-                if(v.getNext() == null){
-                    return v;
-                }
-                return null;
-             });
-         */
+        Collection<Edge> forwardEdges = getForwardEdges(getVertices());
+        Collection<Edge> backwardEdges = getBackwardEdges(getVertices());
         Collection<Vertex> end = new HashSet<>();
         for(Vertex v : getVertices()) {
             if(v.getNext() == null) {
@@ -313,5 +311,55 @@ public class GraphImpl implements Graph {
         for(Edge e : backwardEdges) {
             e.getStartVertex().addNext(e.getTransition(), e.getEndVertex());
         }
+    }
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof Graph) {
+            if(!((Graph) o).getVertices().equals(this.getVertices())) {
+                return false;
+            }
+            if(!((Graph) o).getEdges().equals(this.getEdges())) {
+                return false;
+            }
+            return true;
+        } else {
+            return super.equals(o);
+        }
+    }
+    @Override
+    public int hashCode() {
+        return 0;
+    }
+    @Override
+    public String toString() {
+        String s = "+========= Graph =========+\n";
+        s += "|  +------ Start ------+  |\n";
+        for(Vertex v : start) {
+            s += "|  |        " + v.toString() + "         |  |\n";
+        }
+        s += "|  +-------------------+  |\n";
+        s += "|                         |\n";
+        s += "|  +---- Connected ----+  |\n";
+        for(Vertex v : getConnected(start)) {
+            s += "|  |        " + v.toString() + "         |  |\n";
+        }
+        s += "|  +-------------------+  |\n";
+        s += "|                         |\n";
+        s += "|  +------ Edges ------+  |\n";
+        for(Edge e : getEdges(getConnected(start))) {
+            s += "|  |    " + e.toString() + "     |  |\n";
+        }
+        s += "|  +-------------------+  |\n";
+        if(unconnected != null) {
+            s += "+=========================+\n\n";
+            s += "+------- SubGraphs -------+\n";
+            for(Graph g : unconnected) {
+                s += g.toString() + "\n";
+            }
+            s += "+-------------------------+\n";
+        } else {
+            s += "+=========================+\n";
+        }
+        return s;
     }
 }

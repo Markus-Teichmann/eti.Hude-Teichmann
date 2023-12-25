@@ -142,9 +142,6 @@ public class NFAImpl extends GraphImpl implements NFA {
     @Override
     public boolean acceptsWord(String word) {
         for(Vertex v : getLeafs(word)) {
-            if(v.getPrev() == null) {
-                return false;
-            }
             if(((State) v).getAcceptence() == State.Acceptance.ACCEPTING) {
                 return true;
             }

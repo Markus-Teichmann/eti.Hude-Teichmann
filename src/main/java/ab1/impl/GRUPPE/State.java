@@ -19,6 +19,15 @@ public class State extends VertexImpl {
         return this.acceptance;
     }
     @Override
+    public boolean equals(Object o) {
+        if(o instanceof State) {
+            if(!(((State) o).getAcceptence() == this.getAcceptence())) {
+                return false;
+            }
+        }
+        return super.equals(o);
+    }
+    @Override
     public String toString() {
         return super.toString() + ": " + acceptance;
     }

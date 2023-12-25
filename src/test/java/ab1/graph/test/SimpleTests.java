@@ -26,22 +26,24 @@ public class SimpleTests {
 
     @BeforeAll
     public static void setup(){
-        Vertex start = new VertexImpl("start");
+        Vertex start = new VertexImpl("s0");
         Vertex s1 = new VertexImpl("s1");
         Vertex s2 = new VertexImpl("s2");
-        Vertex end = new VertexImpl("end");
+        Vertex end = new VertexImpl("s3");
         e1 = new EdgeImpl(start, 'a', s1);
         e2 = new EdgeImpl(start, 'a', s2);
         e3 = new EdgeImpl(s1, 'a', s2);
         e4 = new EdgeImpl(s2, 'a', end);
         e5 = new EdgeImpl(end, 'a', s1);
         g = new GraphImpl(start);
+        /*
         Collection<Edge> edges = new HashSet<>();
         edges.add(e1);
         edges.add(e2);
         edges.add(e3);
         edges.add(e4);
         edges.add(e5);
+         */
         g.addEdge(e1);
         g.addEdge(e2);
         g.addEdge(e3);
@@ -66,7 +68,6 @@ public class SimpleTests {
     }
     @Test
     public void addingEdges() {
-        System.out.println("-----Test-----");
         assertTrue(g.contains(e1));
         assertTrue(g.contains(e2));
         assertTrue(g.contains(e3));
@@ -74,16 +75,16 @@ public class SimpleTests {
         assertTrue(g.contains(e5));
     }
     @Test
-    public void containingEdges() {
-
+    public void cloneTest() {
+        Graph h = g.clone();
+        assertEquals(g,h);
     }
-    @Test void gettingVertices() {
-
-    }
-    @Test void gettingEdges() {
-
-    }
-    @Test void gettingLeafs() {
-
+    @Test
+    public void invertTest() {
+        Graph h = g.clone();
+        h.invert();
+        h.invert();
+        System.out.println(g.equals(h));
+        assertEquals(g,h);
     }
 }

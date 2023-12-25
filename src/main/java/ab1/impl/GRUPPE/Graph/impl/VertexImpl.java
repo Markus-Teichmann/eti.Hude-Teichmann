@@ -83,10 +83,8 @@ public class VertexImpl implements Vertex {
             Set<Vertex> set = new HashSet<Vertex>();
             set.add(v);
             next.put(c, set);
-            //v.addPrev(c, this);
         } else if(!next.get(c).contains(v)){
             next.get(c).add(v);
-            //v.addPrev(c, this);
         }
     }
 
@@ -144,6 +142,10 @@ public class VertexImpl implements Vertex {
     @Override
     public String toString() {
         return name;
+    }
+    @Override
+    public Vertex clone() {
+        return new VertexImpl(name);
     }
 
 }

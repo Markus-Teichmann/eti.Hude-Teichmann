@@ -4,4 +4,5 @@ public interface Edge {
     public Vertex getStartVertex();
     public Character getTransition();
     public Vertex getEndVertex();
+    public Edge clone();
 }

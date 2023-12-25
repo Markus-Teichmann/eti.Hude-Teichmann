@@ -28,6 +28,15 @@ public class EdgeImpl implements Edge {
     public Vertex getEndVertex() {
         return this.end;
     }
+    /*
+        Use with care! Das Clonen der Edges erzeugt auch immer neue Vertices.
+        Somit lassen sich geclonte Vertices nicht verbinden! da der End bzw. Startknoten immer ein neuer ist
+        Folgich ist dies Methode eigentlich für nichts gut.
+     */
+    @Override
+    public Edge clone() {
+        return new EdgeImpl(start.clone(), transition, end.clone());
+    }
     @Override
     public boolean equals(Object o) {
         if(o instanceof Edge) {
