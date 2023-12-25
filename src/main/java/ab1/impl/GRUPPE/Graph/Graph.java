@@ -1,5 +1,4 @@
 package ab1.impl.GRUPPE.Graph;
-import ab1.Transition;
 
 
 import java.util.Collection;
@@ -15,8 +14,9 @@ public interface Graph {
     public Vertex getVertex(String name);
     public Collection<Edge> getEdges();
     public Collection<Character> getAlphabet();
-    public Collection<Vertex> getConnected(Vertex v);
-    public Collection<Vertex> getConnected(Collection<Vertex> v);
+    public Collection<Vertex> connectedWith(Vertex v);
+    public Collection<Vertex> connectedWith(Collection<Vertex> v);
+    public Collection<Vertex> reachableFrom(Collection<Vertex> v);
     public Collection<Vertex> getLeafs(String string);
     public Collection<Vertex> getLeafs(Vertex v);
     public Collection<Vertex> getLeafs(Collection<Vertex> vertices);

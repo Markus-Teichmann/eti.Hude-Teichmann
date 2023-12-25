@@ -8,7 +8,6 @@ public class VertexImpl implements Vertex {
     private Map<Character, Set<Vertex>> prev;
     private Map<Character, Set<Vertex>> next;
     private String name;
-
     public VertexImpl(String name) {
         this.name = name;
         this.prev = null;
@@ -25,7 +24,6 @@ public class VertexImpl implements Vertex {
         }
         return null;
     }
-
     @Override
     public Collection<Vertex> getNext(Character c) {
         if(next != null && next.containsKey(c)) {
@@ -44,7 +42,6 @@ public class VertexImpl implements Vertex {
         }
         return null;
     }
-
     @Override
     public Collection<Vertex> getPrev(Character c) {
         if(prev != null && prev.containsKey(c)) {
@@ -52,12 +49,10 @@ public class VertexImpl implements Vertex {
         }
         return null;
     }
-
     @Override
     public String getName() {
         return this.name;
     }
-
     @Override
     public Collection<Character> getOutgoingEdges() {
         if(next != null) {
@@ -65,7 +60,6 @@ public class VertexImpl implements Vertex {
         }
         return null;
     }
-
     @Override
     public Collection<Character> getIncommingEdges() {
         if(prev != null){
@@ -73,7 +67,6 @@ public class VertexImpl implements Vertex {
         }
         return null;
     }
-
     @Override
     public void addNext(Character c, Vertex v) {
         if(next == null) {
@@ -87,7 +80,6 @@ public class VertexImpl implements Vertex {
             next.get(c).add(v);
         }
     }
-
     @Override
     public void addPrev(Character c, Vertex v) {
         if(prev == null) {
@@ -103,7 +95,6 @@ public class VertexImpl implements Vertex {
             //v.addNext(c, this);
         }
     }
-
     @Override
     public void removeNext(Character c, Vertex v) {
         if(next.containsKey(c)) {
@@ -115,7 +106,6 @@ public class VertexImpl implements Vertex {
             }
         }
     }
-
     @Override
     public void removePrev(Character c, Vertex v) {
         if(prev.containsKey(c)) {
@@ -147,5 +137,4 @@ public class VertexImpl implements Vertex {
     public Vertex clone() {
         return new VertexImpl(name);
     }
-
 }

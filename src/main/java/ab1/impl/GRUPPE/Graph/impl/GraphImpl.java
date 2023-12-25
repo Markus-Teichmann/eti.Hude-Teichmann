@@ -78,8 +78,8 @@ public class GraphImpl implements Graph {
     @Override
     public Collection<Vertex> getVertices() {
         Collection<Vertex> connected = new HashSet<>();
+        connected.addAll(connectedWith(start));
         connected.addAll(start);
-        connected.addAll(getConnected(connected));
         if(unconnected != null) {
             for(Graph g : unconnected) {
                 connected.addAll(g.getVertices());
@@ -187,13 +187,13 @@ public class GraphImpl implements Graph {
         return null;
     }
     @Override
-    public Collection<Vertex> getConnected(Vertex v) {
+    public Collection<Vertex> connectedWith(Vertex v) {
         Collection<Vertex> vertices = new HashSet<>();
         vertices.add(v);
-        return getConnected(vertices);
+        return connectedWith(vertices);
     }
     @Override
-    public Collection<Vertex> getConnected(Collection<Vertex> vertices) {
+    public Collection<Vertex> connectedWith(Collection<Vertex> vertices) {
         Collection<Vertex> connected = new HashSet<>();
         Collection<Collection<Vertex>> collections = iterate(vertices, Vertex::getNext, (Vertex v) -> v.getNext());
         for(Collection<Vertex> collection : collections) {
@@ -202,8 +202,15 @@ public class GraphImpl implements Graph {
         return connected;
     }
     @Override
+    public Collection<Vertex> reachableFrom(Collection<Vertex> vertices) {
+        Collection<Vertex> reached = new HashSet<>();
+        reached.addAll(connectedWith(vertices));
+        reached.addAll(vertices);
+        return reached;
+    }
+    @Override
     public Graph getSubGraph(Vertex v) {
-        if(getConnected(start).contains(v)) {
+        if(connectedWith(start).contains(v)) {
             if(unconnected == null) {
                 return this;
             } else {
@@ -233,7 +240,7 @@ public class GraphImpl implements Graph {
         for(int i=0; i<string.length(); i++) {
             int size;
             do {
-                size = roots.size();
+                size = roots.size(); //ToDo: Evtl. kommen wir auch ohne iterate aus.
                 roots.addAll(iterate(roots,(Vertex v) -> v.getNext(null), (Vertex v) -> v));
             } while(size < roots.size());
             for(Vertex v : roots) {
@@ -289,16 +296,15 @@ public class GraphImpl implements Graph {
     }
     @Override
     public void invert() {
-        Collection<Edge> forwardEdges = getForwardEdges(getVertices());
-        Collection<Edge> backwardEdges = getBackwardEdges(getVertices());
-        Collection<Vertex> end = new HashSet<>();
-        for(Vertex v : getVertices()) {
-            if(v.getNext() == null) {
-                end.add(v);
+        if(unconnected != null) {
+            for(Graph g : unconnected) {
+                g.invert();
             }
         }
-        start.clear();
-        start.addAll(end);
+        Collection<Vertex> vertices = connectedWith(start);
+        vertices.addAll(start);
+        Collection<Edge> forwardEdges = getForwardEdges(vertices);
+        Collection<Edge> backwardEdges = getBackwardEdges(vertices);
         for(Edge e : forwardEdges) {
             e.getStartVertex().removeNext(e.getTransition(), e.getEndVertex());
         }
@@ -306,11 +312,49 @@ public class GraphImpl implements Graph {
             e.getEndVertex().removePrev(e.getTransition(), e.getStartVertex());
         }
         for(Edge e : forwardEdges) {
-            e.getEndVertex().addPrev(e.getTransition(), e.getStartVertex());
+            e.getEndVertex().addNext(e.getTransition(), e.getStartVertex());
         }
         for(Edge e : backwardEdges) {
-            e.getStartVertex().addNext(e.getTransition(), e.getEndVertex());
+            e.getStartVertex().addPrev(e.getTransition(), e.getEndVertex());
         }
+        Collection<Vertex> end = new HashSet<>();
+        /*
+            Da wir hier eine geschlossenen Graphen betrachten, muss der Invertierte auch wieder ein geschlossener
+            Graph sein. Es muss also eine Menge an Knoten geben von denen aus alle anderen Knoten in Vertices
+            erreicht werden. Um diese zu finden, iterieren wir über die Potenzmenge von Vertices und hören auf, sobald
+            wir eine passend Teilmenge gefunden haben. Bei dieser Programmierung wird auch darauf geachtet, alle Knoten
+            der Teilmenge nachfolge Knoten haben.
+
+            Anmerkung:
+            Zählen wir Binär von 0 bis zur Größe einer Menge, so stellen die Positionen der 1en die Potenzmenge dar.
+            Ein Beispiel: Seien M = {a, b, c} eine Menge so finden wir:
+                a   b   c
+            0   0   0   0 => {}
+            1   0   0   1 => {c}
+            2   0   1   0 => {b}
+            3   0   1   1 => {b,c}
+            4   1   0   0 => {a}
+            5   1   0   1 => {a, c}
+            6   1   1   0 => {a, b}
+            7   1   1   1 => {a, b, c}
+         */
+        int i = 0;
+        do {
+            end.clear();
+            int logOfI = 0;
+            for(; (1 << logOfI) < i; logOfI++);
+            for(int j=0; j < logOfI; j++) {
+                if(((i >> j) & 1) == 1) { //Von Rechts nach Links die Postionen der Binärzahl i an denen eine 1 steht.
+                    if(((Vertex) vertices.toArray()[j]).getNext() != null &&
+                            !((Vertex) vertices.toArray()[j]).getNext().isEmpty()) {
+                        end.add((Vertex) vertices.toArray()[j]);
+                    }
+                }
+            }
+            i++;
+        } while(reachableFrom(end).size() != vertices.size());
+        start.clear();
+        start.addAll(end);
     }
     @Override
     public boolean equals(Object o) {
@@ -340,17 +384,17 @@ public class GraphImpl implements Graph {
         s += "|  +-------------------+  |\n";
         s += "|                         |\n";
         s += "|  +---- Connected ----+  |\n";
-        for(Vertex v : getConnected(start)) {
+        for(Vertex v : connectedWith(start)) {
             s += "|  |        " + v.toString() + "         |  |\n";
         }
         s += "|  +-------------------+  |\n";
         s += "|                         |\n";
         s += "|  +------ Edges ------+  |\n";
-        for(Edge e : getEdges(getConnected(start))) {
+        for(Edge e : getEdges()) {
             s += "|  |    " + e.toString() + "     |  |\n";
         }
         s += "|  +-------------------+  |\n";
-        if(unconnected != null) {
+        if(!(unconnected == null || unconnected.isEmpty())) {
             s += "+=========================+\n\n";
             s += "+------- SubGraphs -------+\n";
             for(Graph g : unconnected) {

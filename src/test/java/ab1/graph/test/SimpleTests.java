@@ -84,6 +84,7 @@ public class SimpleTests {
         Graph h = g.clone();
         h.invert();
         h.invert();
+        System.out.println(h);
         System.out.println(g.equals(h));
         assertEquals(g,h);
     }

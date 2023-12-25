@@ -7,7 +7,6 @@ import ab1.impl.GRUPPE.Graph.Edge;
 import ab1.impl.GRUPPE.Graph.Vertex;
 import ab1.impl.GRUPPE.Graph.impl.EdgeImpl;
 import ab1.impl.GRUPPE.Graph.impl.GraphImpl;
-import ab1.impl.GRUPPE.Graph.impl.VertexImpl;
 
 import java.util.*;
 
@@ -126,12 +125,12 @@ public class NFAImpl extends GraphImpl implements NFA {
     public boolean isFinite() {
         Set<State> poi = new HashSet<>();
         for(State s : states()) {
-            if(getConnected(s).contains(s)) {
+            if(connectedWith(s).contains(s)) {
                 poi.add(s);
             }
         }
         for(State s : poi) {
-            for(Vertex v : getConnected(s)) {
+            for(Vertex v : connectedWith(s)) {
                 if (((State) v).getAcceptence() == State.Acceptance.ACCEPTING) {
                     return false;
                 }

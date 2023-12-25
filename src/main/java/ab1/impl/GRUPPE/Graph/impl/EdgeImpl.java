@@ -40,9 +40,9 @@ public class EdgeImpl implements Edge {
     @Override
     public boolean equals(Object o) {
         if(o instanceof Edge) {
-            return ((Edge) o).getStartVertex().getName().equals(this.start.getName()) &&
+            return ((Edge) o).getStartVertex().equals(this.start) &&
                     ((Edge) o).getTransition() == this.transition &&
-                    ((Edge) o).getEndVertex().getName().equals(this.end.getName());
+                    ((Edge) o).getEndVertex().equals(this.end);
         } else {
             return super.equals(o);
         }
