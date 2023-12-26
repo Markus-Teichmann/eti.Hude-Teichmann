@@ -20,12 +20,13 @@ public class GraphImpl implements Graph {
         this.start = start;
         unconnected = null;
     }
-    private <T> Collection<T> iterate(Collection<Vertex> start, Function<Vertex,Collection<Vertex>> getter, Function<Vertex,T> function) {
+    private <T> Collection<T> iterate(Collection<Vertex> start, Integer radius, Function<Vertex,Collection<Vertex>> getter, Function<Vertex,T> function) {
         Collection<T> values = new HashSet<T>();
         Collection<Vertex> roots = new HashSet<Vertex>(start);
         Collection<Vertex> leafs = new HashSet<Vertex>();
         Collection<Vertex> set = new HashSet<Vertex>(start);
         int size;
+        int i = 0;
         do {
             size = set.size();
             for(Vertex v : roots) {
@@ -42,7 +43,8 @@ public class GraphImpl implements Graph {
             roots.addAll(leafs);
             set.addAll(leafs);
             leafs.clear();
-        } while(size < set.size());
+            i++;
+        } while(size < set.size() && (radius == null || i != radius));
         return values;
     }
     private Collection<Edge> getForwardEdges(Collection<Vertex> vertices) {
@@ -50,7 +52,7 @@ public class GraphImpl implements Graph {
         for(Vertex v : vertices) {
             if(v.getOutgoingEdges() != null) {
                 for (Character c : v.getOutgoingEdges()) {
-                    for (Vertex vertex : v.getNext(c)) {
+                    for (Vertex vertex : v.getNext(new HashSet<Character>(){{add(c);}})) {
                         edges.add(new EdgeImpl(v, c, vertex));
                     }
                 }
@@ -63,7 +65,7 @@ public class GraphImpl implements Graph {
         for(Vertex v : vertices) {
             if(v.getIncommingEdges() != null) {
                 for (Character c : v.getIncommingEdges()) {
-                    for (Vertex vertex : v.getPrev(c)) {
+                    for (Vertex vertex : v.getPrev(new HashSet<Character>(){{add(c);}})) {
                         edges.add(new EdgeImpl(vertex, c, v));
                     }
                 }
@@ -77,8 +79,7 @@ public class GraphImpl implements Graph {
     }
     @Override
     public Collection<Vertex> getVertices() {
-        Collection<Vertex> connected = new HashSet<>();
-        connected.addAll(connectedWith(start));
+        Collection<Vertex> connected = getProximity(null, null, start);
         connected.addAll(start);
         if(unconnected != null) {
             for(Graph g : unconnected) {
@@ -104,6 +105,26 @@ public class GraphImpl implements Graph {
         }
         return alphabet;
     }
+    /*
+        @param radius Ist radius == null so ist es ein unbeschränkter Radius.
+    */
+    @Override
+    public Collection<Vertex> getProximity(Integer radius, Collection<Character> transitions, Collection<Vertex> start) {
+        if((radius != null && radius == 0) || (transitions != null && transitions.isEmpty())) {
+            return start;
+        } else {
+            Collection<Vertex> proximity = new HashSet<>(start);
+            Collection<Collection<Vertex>> collections = iterate(start, radius, (Vertex v) -> v.getNext(transitions), (Vertex v) -> v.getNext(transitions));
+            for(Collection<Vertex> collection : collections) {
+                proximity.addAll(collection);
+            }
+            proximity.removeAll(start);
+            return proximity;
+        }
+    }
+
+
+
     @Override
     public boolean contains(Vertex v) {
         return getVertices().contains(v);
@@ -126,7 +147,6 @@ public class GraphImpl implements Graph {
         }
         return false;
     }
-
     @Override
     public void addVertex(Vertex v) {
         if(!contains(v)) {
@@ -186,31 +206,10 @@ public class GraphImpl implements Graph {
         }
         return null;
     }
-    @Override
-    public Collection<Vertex> connectedWith(Vertex v) {
-        Collection<Vertex> vertices = new HashSet<>();
-        vertices.add(v);
-        return connectedWith(vertices);
-    }
-    @Override
-    public Collection<Vertex> connectedWith(Collection<Vertex> vertices) {
-        Collection<Vertex> connected = new HashSet<>();
-        Collection<Collection<Vertex>> collections = iterate(vertices, Vertex::getNext, (Vertex v) -> v.getNext());
-        for(Collection<Vertex> collection : collections) {
-            connected.addAll(collection);
-        }
-        return connected;
-    }
-    @Override
-    public Collection<Vertex> reachableFrom(Collection<Vertex> vertices) {
-        Collection<Vertex> reached = new HashSet<>();
-        reached.addAll(connectedWith(vertices));
-        reached.addAll(vertices);
-        return reached;
-    }
+
     @Override
     public Graph getSubGraph(Vertex v) {
-        if(connectedWith(start).contains(v)) {
+        if(getProximity(null, getAlphabet(), start).contains(v)) {
             if(unconnected == null) {
                 return this;
             } else {
@@ -222,43 +221,6 @@ public class GraphImpl implements Graph {
             }
         }
         return null;
-    }
-    @Override
-    public Collection<Vertex> getLeafs(Vertex v) {
-        Collection<Vertex> vertices = new HashSet<>();
-        vertices.add(v);
-        return getLeafs(vertices);
-    }
-    @Override
-    public Collection<Vertex> getLeafs(Collection<Vertex> vertices) {
-        return iterate(vertices, Vertex::getNext, (Vertex v) -> v.getNext().isEmpty() ? v : null);
-    }
-    @Override
-    public Collection<Vertex> getLeafs(String string) {
-        Collection<Vertex> roots = new HashSet<>(start);
-        Collection<Vertex> leafs = new HashSet<>();
-        for(int i=0; i<string.length(); i++) {
-            int size;
-            do {
-                size = roots.size(); //ToDo: Evtl. kommen wir auch ohne iterate aus.
-                roots.addAll(iterate(roots,(Vertex v) -> v.getNext(null), (Vertex v) -> v));
-            } while(size < roots.size());
-            for(Vertex v : roots) {
-                if(v.getNext(string.charAt(i)) == null) {
-                    leafs.remove(v);
-                } else {
-                    leafs.addAll(v.getNext(string.charAt(i)));
-                }
-            }
-            do {
-                size = leafs.size();
-                leafs.addAll(iterate(leafs, (Vertex v) -> v.getNext(null), (Vertex v) -> v));
-            } while(size < leafs.size());
-            roots.clear();
-            roots.addAll(leafs);
-            leafs.clear();
-        }
-        return roots;
     }
     @Override
     public Graph clone() {
@@ -301,7 +263,7 @@ public class GraphImpl implements Graph {
                 g.invert();
             }
         }
-        Collection<Vertex> vertices = connectedWith(start);
+        Collection<Vertex> vertices = getProximity(null, getAlphabet(), start);
         vertices.addAll(start);
         Collection<Edge> forwardEdges = getForwardEdges(vertices);
         Collection<Edge> backwardEdges = getBackwardEdges(vertices);
@@ -338,6 +300,7 @@ public class GraphImpl implements Graph {
             6   1   1   0 => {a, b}
             7   1   1   1 => {a, b, c}
          */
+        Collection<Vertex> collection = new HashSet<>();
         int i = 0;
         do {
             end.clear();
@@ -345,14 +308,16 @@ public class GraphImpl implements Graph {
             for(; (1 << logOfI) < i; logOfI++);
             for(int j=0; j < logOfI; j++) {
                 if(((i >> j) & 1) == 1) { //Von Rechts nach Links die Postionen der Binärzahl i an denen eine 1 steht.
-                    if(((Vertex) vertices.toArray()[j]).getNext() != null &&
-                            !((Vertex) vertices.toArray()[j]).getNext().isEmpty()) {
+                    if(((Vertex) vertices.toArray()[j]).getNext(getAlphabet()) != null &&
+                            !((Vertex) vertices.toArray()[j]).getNext(getAlphabet()).isEmpty()) {
                         end.add((Vertex) vertices.toArray()[j]);
                     }
                 }
             }
+            collection.addAll(getProximity(null, getAlphabet(), end));
+            collection.addAll(end);
             i++;
-        } while(reachableFrom(end).size() != vertices.size());
+        } while(collection.size() != vertices.size());
         start.clear();
         start.addAll(end);
     }
@@ -384,7 +349,7 @@ public class GraphImpl implements Graph {
         s += "|  +-------------------+  |\n";
         s += "|                         |\n";
         s += "|  +---- Connected ----+  |\n";
-        for(Vertex v : connectedWith(start)) {
+        for(Vertex v : getProximity(null, getAlphabet(), start)) {
             s += "|  |        " + v.toString() + "         |  |\n";
         }
         s += "|  +-------------------+  |\n";

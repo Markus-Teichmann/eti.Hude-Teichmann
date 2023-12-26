@@ -22,6 +22,9 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
         return false;
     }
+    private boolean isDFA() {
+        return false;
+    }
     private Set<State> states() {
         Set<State> states = new HashSet<>();
         for(Vertex v : getVertices()) {
@@ -34,6 +37,13 @@ public class NFAImpl extends GraphImpl implements NFA {
             return new State(name);
         } else {
             return (State) this.getVertex(name);
+        }
+    }
+    private Set<State> getProximity(Character c) {
+        if(c == null) {
+            return null;
+        } else {
+            return null;
         }
     }
     /*
@@ -83,7 +93,7 @@ public class NFAImpl extends GraphImpl implements NFA {
         if (isFinalized()) {
             throw new FinalizedStateException("Can't add accepting state to finalized automata");
         }
-        if(!contains(new State(name))) {
+        if(!contains(name)) {
             addVertex(new State(name));
         }
         this.getState(name).setAcceptance(State.Acceptance.ACCEPTING);
@@ -125,12 +135,16 @@ public class NFAImpl extends GraphImpl implements NFA {
     public boolean isFinite() {
         Set<State> poi = new HashSet<>();
         for(State s : states()) {
-            if(connectedWith(s).contains(s)) {
+            Collection<Vertex> collection = new HashSet<>();
+            collection.add(s);
+            if(getProximity(null, getAlphabet(), collection).contains(s)) {
                 poi.add(s);
             }
         }
         for(State s : poi) {
-            for(Vertex v : connectedWith(s)) {
+            Collection<Vertex> collection = new HashSet<>();
+            collection.add(s);
+            for(Vertex v : getProximity(null, getAlphabet(), collection)) {
                 if (((State) v).getAcceptence() == State.Acceptance.ACCEPTING) {
                     return false;
                 }
@@ -140,7 +154,25 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public boolean acceptsWord(String word) {
-        for(Vertex v : getLeafs(word)) {
+        Collection<Vertex> roots = new HashSet<>(getStart());
+        Collection<Vertex> leafs = new HashSet<>();
+        for(int i=0; i<word.length(); i++) {
+            int size;
+            roots.addAll(getProximity(null, new HashSet<Character>(){{add(null);}}, roots));
+            for(Vertex v : roots) {
+                Character c = word.charAt(i);
+                if(v.getNext(new HashSet<Character>(){{add(c);}}) == null) {
+                    leafs.remove(v); //Wenn wir einen Knoten erreicht haben von dem es nicht weiter geht müssen wir diesen entfernen.
+                } else {
+                    leafs.addAll(v.getNext(new HashSet<Character>(){{add(c);}}));
+                }
+            }
+            leafs.addAll(getProximity(null, new HashSet<Character>(){{add(null);}}, leafs));
+            roots.clear();
+            roots.addAll(leafs);
+            leafs.clear();
+        }
+        for(Vertex v : roots) {
             if(((State) v).getAcceptence() == State.Acceptance.ACCEPTING) {
                 return true;
             }

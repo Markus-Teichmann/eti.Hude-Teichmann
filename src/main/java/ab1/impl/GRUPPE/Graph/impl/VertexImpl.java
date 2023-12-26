@@ -14,40 +14,50 @@ public class VertexImpl implements Vertex {
         this.next = null;
     }
     @Override
-    public Collection<Vertex> getNext() {
-        if(this.next != null) {
-            Set<Vertex> next = new HashSet<Vertex>();
-            for (Character c : this.next.keySet()) {
-                next.addAll(this.next.get(c));
+    public Collection<Vertex> getNext(Collection<Character> transitions) {
+        if(transitions == null) {
+            if(this.next != null) {
+                Set<Vertex> next = new HashSet<>();
+                for (Character c : this.next.keySet()) {
+                    next.addAll(this.next.get(c));
+                }
+                return next;
+            }
+            return null;
+        } else if (transitions.isEmpty()) {
+            return null;
+        } else {
+            Collection<Vertex> next = new HashSet<>();
+            for (Character c : transitions) {
+                if(this.next != null && this.next.containsKey(c)) {
+                    next.addAll(this.next.get(c));
+                }
             }
             return next;
         }
-        return null;
     }
     @Override
-    public Collection<Vertex> getNext(Character c) {
-        if(next != null && next.containsKey(c)) {
-            return next.get(c);
-        }
-        return null;
-    }
-    @Override
-    public Collection<Vertex> getPrev() {
-        if(this.prev != null) {
-            Set<Vertex> prev = new HashSet<Vertex>();
-            for (Character c : this.prev.keySet()) {
-                prev.addAll(this.prev.get(c));
+    public Collection<Vertex> getPrev(Collection<Character> transitions) {
+        if(transitions == null) {
+            if(this.prev != null) {
+                Set<Vertex> prev = new HashSet<>();
+                for (Character c : this.prev.keySet()) {
+                    prev.addAll(this.prev.get(c));
+                }
+                return prev;
+            }
+            return null;
+        } else if (transitions.isEmpty()) {
+            return null;
+        } else {
+            Collection<Vertex> prev = new HashSet<>();
+            for (Character c : transitions) {
+                if(this.prev != null && this.prev.containsKey(c)) {
+                    prev.addAll(this.prev.get(c));
+                }
             }
             return prev;
         }
-        return null;
-    }
-    @Override
-    public Collection<Vertex> getPrev(Character c) {
-        if(prev != null && prev.containsKey(c)) {
-            return prev.get(c);
-        }
-        return null;
     }
     @Override
     public String getName() {
