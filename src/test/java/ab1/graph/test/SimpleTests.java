@@ -33,6 +33,10 @@ public class SimpleTests {
     private static Edge e3;
     private static Edge e4;
     private static Edge e5;
+    private static Edge e6;
+    private static Edge e7;
+    private static Edge e8;
+    private static Edge e9;
 
 
     @BeforeAll
@@ -53,12 +57,20 @@ public class SimpleTests {
         e3 = new EdgeImpl(s1, 'a', s2);
         e4 = new EdgeImpl(s2, 'a', s3);
         e5 = new EdgeImpl(s3, 'a', s1);
+        e6 = new EdgeImpl(s3, null, s4);
+        e7 = new EdgeImpl(s4, 'b', s5);
+        e8 = new EdgeImpl(s3, null, s5);
+        e9 = new EdgeImpl(s4, 'b', s6);
         g = new GraphImpl(s0);
         g.addEdge(e1);
         g.addEdge(e2);
         g.addEdge(e3);
         g.addEdge(e4);
         g.addEdge(e5);
+        g.addEdge(e6);
+        g.addEdge(e7);
+        g.addEdge(e8);
+        g.addEdge(e9);
     }
     @Test
     public void addingVertecies() {
@@ -98,14 +110,6 @@ public class SimpleTests {
     }
     @Test
     public void proximityTest() {
-        Edge e6 = new EdgeImpl(s3, null, s4);
-        Edge e7 = new EdgeImpl(s4, 'b', s5);
-        Edge e8 = new EdgeImpl(s3, null, s5);
-        Edge e9 = new EdgeImpl(s4, 'b', s6);
-        g.addEdge(e6);
-        g.addEdge(e7);
-        g.addEdge(e8);
-        g.addEdge(e9);
         Collection<Character> transitions = new HashSet<>();
         transitions.add(null);
         transitions.add('a');
@@ -113,8 +117,10 @@ public class SimpleTests {
         Collection<Vertex> start = new HashSet<>();
         start.add(s3);
         Collection<Vertex> proximity = g.getProximity(2, transitions, start);
-        for(Vertex v : proximity) {
-            System.out.println(v);
-        }
+        assertEquals(proximity, new HashSet<Vertex>(){{add(s4); add(s5); add(s1); add(s6); add(s2);}});
+    }
+    @Test
+    public void alphabetTest() {
+        g.getAlphabet(g.getVertices());
     }
 }

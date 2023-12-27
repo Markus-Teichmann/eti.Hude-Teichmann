@@ -88,19 +88,16 @@ public class GraphImpl implements Graph {
         }
         return connected;
     }
-    private Collection<Edge> getEdges(Collection<Vertex> vertices) {
+    @Override
+    public Collection<Edge> getEdges(Collection<Vertex> vertices) {
         Collection<Edge> edges = getForwardEdges(vertices);
         edges.addAll(getBackwardEdges(vertices));
         return edges;
     }
     @Override
-    public Collection<Edge> getEdges() {
-        return getEdges(getVertices());
-    }
-    @Override
-    public Collection<Character> getAlphabet() {
+    public Collection<Character> getAlphabet(Collection<Vertex> vertices) {
         Collection<Character> alphabet = new HashSet<>();
-        for(Edge e : getEdges()) {
+        for(Edge e : getEdges(vertices)) {
             alphabet.add(e.getTransition());
         }
         return alphabet;
@@ -131,7 +128,7 @@ public class GraphImpl implements Graph {
     }
     @Override
     public boolean contains(Edge e) {
-        return getEdges().contains(e);
+        return getEdges(getVertices()).contains(e);
     }
     @Override
     public boolean contains(Graph graph) {
@@ -209,7 +206,7 @@ public class GraphImpl implements Graph {
 
     @Override
     public Graph getSubGraph(Vertex v) {
-        if(getProximity(null, getAlphabet(), start).contains(v)) {
+        if(getProximity(null, getAlphabet(getVertices()), start).contains(v)) {
             if(unconnected == null) {
                 return this;
             } else {
@@ -229,7 +226,7 @@ public class GraphImpl implements Graph {
             vertices.add(v.clone());
         }
         Collection<Edge> edges = new HashSet<>();
-        for(Edge e : getEdges()) {
+        for(Edge e : getEdges(getVertices())) {
             Vertex start = null;
             for(Vertex v : vertices) {
                 if(v.equals(e.getStartVertex())) {
@@ -263,7 +260,7 @@ public class GraphImpl implements Graph {
                 g.invert();
             }
         }
-        Collection<Vertex> vertices = getProximity(null, getAlphabet(), start);
+        Collection<Vertex> vertices = getProximity(null, getAlphabet(getVertices()), start);
         vertices.addAll(start);
         Collection<Edge> forwardEdges = getForwardEdges(vertices);
         Collection<Edge> backwardEdges = getBackwardEdges(vertices);
@@ -306,15 +303,16 @@ public class GraphImpl implements Graph {
             end.clear();
             int logOfI = 0;
             for(; (1 << logOfI) < i; logOfI++);
-            for(int j=0; j < logOfI; j++) {
+            for(int j=0; j <= logOfI; j++) {
                 if(((i >> j) & 1) == 1) { //Von Rechts nach Links die Postionen der Binärzahl i an denen eine 1 steht.
-                    if(((Vertex) vertices.toArray()[j]).getNext(getAlphabet()) != null &&
-                            !((Vertex) vertices.toArray()[j]).getNext(getAlphabet()).isEmpty()) {
+                    if(((Vertex) vertices.toArray()[j]).getNext(getAlphabet(vertices)) != null &&
+                            !((Vertex) vertices.toArray()[j]).getNext(getAlphabet(vertices)).isEmpty()) {
                         end.add((Vertex) vertices.toArray()[j]);
                     }
                 }
             }
-            collection.addAll(getProximity(null, getAlphabet(), end));
+            collection.clear();
+            collection.addAll(getProximity(null, getAlphabet(vertices), end));
             collection.addAll(end);
             i++;
         } while(collection.size() != vertices.size());
@@ -327,7 +325,7 @@ public class GraphImpl implements Graph {
             if(!((Graph) o).getVertices().equals(this.getVertices())) {
                 return false;
             }
-            if(!((Graph) o).getEdges().equals(this.getEdges())) {
+            if(!((Graph) o).getEdges(getVertices()).equals(this.getEdges(getVertices()))) {
                 return false;
             }
             return true;
@@ -349,13 +347,13 @@ public class GraphImpl implements Graph {
         s += "|  +-------------------+  |\n";
         s += "|                         |\n";
         s += "|  +---- Connected ----+  |\n";
-        for(Vertex v : getProximity(null, getAlphabet(), start)) {
+        for(Vertex v : getProximity(null, getAlphabet(getVertices()), start)) {
             s += "|  |        " + v.toString() + "         |  |\n";
         }
         s += "|  +-------------------+  |\n";
         s += "|                         |\n";
         s += "|  +------ Edges ------+  |\n";
-        for(Edge e : getEdges()) {
+        for(Edge e : getEdges(getVertices())) {
             s += "|  |    " + e.toString() + "     |  |\n";
         }
         s += "|  +-------------------+  |\n";

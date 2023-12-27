@@ -39,13 +39,6 @@ public class NFAImpl extends GraphImpl implements NFA {
             return (State) this.getVertex(name);
         }
     }
-    private Set<State> getProximity(Character c) {
-        if(c == null) {
-            return null;
-        } else {
-            return null;
-        }
-    }
     /*
         Diese Methode gibt eine Deep-Copy des aktuellen NFA's zurück.
      */
@@ -137,14 +130,14 @@ public class NFAImpl extends GraphImpl implements NFA {
         for(State s : states()) {
             Collection<Vertex> collection = new HashSet<>();
             collection.add(s);
-            if(getProximity(null, getAlphabet(), collection).contains(s)) {
+            if(getProximity(null, getAlphabet(getVertices()), collection).contains(s)) {
                 poi.add(s);
             }
         }
         for(State s : poi) {
             Collection<Vertex> collection = new HashSet<>();
             collection.add(s);
-            for(Vertex v : getProximity(null, getAlphabet(), collection)) {
+            for(Vertex v : getProximity(null, getAlphabet(getVertices()), collection)) {
                 if (((State) v).getAcceptence() == State.Acceptance.ACCEPTING) {
                     return false;
                 }

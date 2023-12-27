@@ -6,8 +6,8 @@ import java.util.Collection;
 public interface Graph {
     public Collection<Vertex> getStart();
     public Collection<Vertex> getVertices();
-    public Collection<Edge> getEdges();
-    public Collection<Character> getAlphabet();
+    public Collection<Edge> getEdges(Collection<Vertex> vertices);
+    public Collection<Character> getAlphabet(Collection<Vertex> vertices);
     public Collection<Vertex> getProximity(Integer radius, Collection<Character> transition, Collection<Vertex> start);
 
     public boolean contains(Vertex v);
