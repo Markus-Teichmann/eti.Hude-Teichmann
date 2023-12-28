@@ -110,16 +110,14 @@ public class GraphImpl implements Graph {
         if((radius != null && radius == 0) || (transitions != null && transitions.isEmpty())) {
             return start;
         } else {
-            Collection<Vertex> proximity = new HashSet<>(start);
+            Collection<Vertex> proximity = new HashSet<>();
             Collection<Collection<Vertex>> collections = iterate(start, radius, (Vertex v) -> v.getNext(transitions), (Vertex v) -> v.getNext(transitions));
             for(Collection<Vertex> collection : collections) {
                 proximity.addAll(collection);
             }
-            proximity.removeAll(start);
             return proximity;
         }
     }
-
 
 
     @Override
@@ -368,5 +366,8 @@ public class GraphImpl implements Graph {
             s += "+=========================+\n";
         }
         return s;
+    }
+    protected void setUnconnected(Collection<Graph> unconnected) {
+        this.unconnected = unconnected;
     }
 }

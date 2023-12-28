@@ -127,4 +127,60 @@ public class SimpleTests {
         instance.addAcceptingState("S2");
         assertFalse(instance.isFinite());
     }
+    @Test
+    public void myToDFATest() {
+        var instance = factory.buildNFA("A");
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('a')
+                        .fromState("A")
+                        .toState("B")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('b')
+                        .fromState("A")
+                        .toState("C")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('a')
+                        .fromState("A")
+                        .toState("A")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('a')
+                        .fromState("B")
+                        .toState("A")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('b')
+                        .fromState("B")
+                        .toState("B")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('b')
+                        .fromState("C")
+                        .toState("A")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('b')
+                        .fromState("C")
+                        .toState("B")
+                        .build()
+        );
+        instance.addAcceptingState("C");
+        //System.out.println(instance);
+        instance.complement();
+    }
 }

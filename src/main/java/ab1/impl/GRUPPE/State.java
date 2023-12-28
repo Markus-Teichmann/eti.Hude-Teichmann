@@ -1,7 +1,8 @@
 package ab1.impl.GRUPPE;
+import ab1.impl.GRUPPE.Graph.Vertex;
 import ab1.impl.GRUPPE.Graph.impl.VertexImpl;
 
-public class State extends VertexImpl {
+public class State extends VertexImpl implements Vertex {
     public enum Acceptance {
         ACCEPTING,
         DENYING
@@ -30,5 +31,11 @@ public class State extends VertexImpl {
     @Override
     public String toString() {
         return super.toString() + ": " + acceptance;
+    }
+    @Override
+    public State clone() {
+        State s = (State) super.clone();
+        s.setAcceptance(acceptance);
+        return s;
     }
 }
