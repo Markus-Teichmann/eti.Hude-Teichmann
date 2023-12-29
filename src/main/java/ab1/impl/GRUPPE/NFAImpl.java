@@ -8,6 +8,7 @@ import ab1.impl.GRUPPE.Graph.Graph;
 import ab1.impl.GRUPPE.Graph.Vertex;
 import ab1.impl.GRUPPE.Graph.impl.EdgeImpl;
 import ab1.impl.GRUPPE.Graph.impl.GraphImpl;
+import ab1.impl.GRUPPE.Graph.utils.SetOperations;
 
 import java.util.*;
 
@@ -31,120 +32,96 @@ public class NFAImpl extends GraphImpl implements NFA {
             return false;
         }
         for(State s : states()) {
-            if(s.getNext(getAlphabet(getVertices())).size() > 1) {
-                return false;
+            for(Character c : getAlphabet(getVertices())) {
+                if(s.getNext(new HashSet<>(){{add(c);}}).size() > 1) {
+                    return false;
+                }
             }
         }
         return true;
     }
     private void toDFA() {
-        //setUnconnected(null);
-        //NFAImpl dfa = clone();
-        Map<State, Collection<Vertex>> roots = new HashMap<>();
-        State initialState = new State("");
+        setUnconnected(null);
+        Map<State, Collection<Vertex>> newStates = new HashMap<>();
         for(Vertex v : getStart()) {
-            initialState = (State) v;
+            newStates.put(new State(v.getName()), getStart());
+            break; //Nach konstruktor ist hier sowieso immer nur einer drin!
         }
-        roots.put(initialState, getStart());
-        Collection<State> newStates = new HashSet<>(roots.keySet());
+        for(Vertex v : getVertices()) {
+            String name = v.getName();
+            Collection<Vertex> next = new HashSet<>(){{add(v);}};
+            for(Vertex reached : getProximity(null, new HashSet<>(){{add(null);}}, new HashSet<>(){{add(v);}})) {
+                name += reached.getName();
+                SetOperations.add(next, reached);
+            }
+            if(next.size() > 1) {
+                boolean exsists = false;
+                for(State superState : newStates.keySet()) {
+                    if(SetOperations.equals(newStates.get(superState), next)) {
+                        exsists = true;
+                        break;
+                    }
+                }
+                if(!exsists) {
+                    State superState = new State(name);
+                    newStates.put(superState, next);
+                }
+            }
+        }
+        Map<State, Collection<Vertex>> roots = new HashMap<>(newStates);
+        Map<State, Collection<? extends Vertex>> leafs = new HashMap<>();
+        Collection<Edge> newEdges = new HashSet<>();
         int size;
         do {
-            size = newStates.size();
-            Map<State, Collection<Vertex>> leafs = new HashMap<>();
-            for(State s : roots.keySet()) {
-                System.out.println("===");
-                System.out.println(s);
-                System.out.println("---");
+            size = newStates.keySet().size();
+            for(State root : roots.keySet()) {
                 for(Character c : getAlphabet(getVertices())) {
-                    Collection<Vertex> next = new HashSet<>();
+                    Collection<State> next = new HashSet<>();
                     String name = "";
-                    System.out.println("Erreichbar mit: " + c);
-                    if(c == null) {
-                        for(Vertex v : getProximity(null, new HashSet<>(){{add(c);}}, roots.get(s))) {
+                    if(c != null) {
+                        for (Vertex v : getProximity(1, new HashSet<>() {{add(c);}}, roots.get(root))) {
                             name += v.getName();
-                            next.add((State) v);
+                            SetOperations.add(next, (State) v);
                         }
-                        System.out.println("Läuft nicht.");
-                    } else {
-                        for(Vertex v : getProximity(1, new HashSet<>(){{add(c);}}, roots.get(s))) {
-                            System.out.println(v);
-                            name += v.getName();
-                            //if(!proximity ist empty und !durch Vertauschung der Buchstaben im Namen kommen wir zu einem Zustand im KeySet)
-                            next.add((State) v);
+                        boolean exsits = false;
+                        for (Vertex superState : newStates.keySet()) {
+                            if (SetOperations.equals(newStates.get(superState), next)) {
+                                exsits = true;
+                                newEdges.add(new EdgeImpl(root, c, superState));
+                                break;
+                            }
+                        }
+                        if (!exsits && !next.isEmpty()) {
+                            State superState = new State(name);
+                            newEdges.add(new EdgeImpl(root, c, superState));
+                            leafs.put(superState, next);
                         }
                     }
-                    State state = new State(name);
-                    leafs.put(state, next);
                 }
             }
             roots.clear();
-            roots.putAll(leafs);
-            newStates.addAll(leafs.keySet());
-        } while (size < newStates.size());
-        for(State s : newStates) {
-            System.out.println(s);
-        }
-
-
-        /*
-        Map<State, Map<Character, Collection<State>>> stateUnion = new HashMap<>();
-        for(Vertex vert : getStart()) {
-            State s = (State) vert;
-            if(stateUnion.containsKey(s)) {
-                for(Character c : getAlphabet(getVertices())) {
-                    for (State oldState : stateUnion.get(s)) {
-
-                    }
-                }
-            } else {
-                if(s.getNext(new HashSet<>(){{add(null);}}) != null && !s.getNext(new HashSet<>(){{add(null);}}).isEmpty()) {
-                    Collection<State> oldStates = new HashSet<>();
-                    String name = s.getName();
-                    for(Vertex v : getProximity(null, new HashSet<>(){{add(null);}}, new HashSet<>(){{add(s);}})) {
-                        name += "";
-                        oldStates.add((State) v);
-                    }
-                    State state = new State(name);
-                    for(State oldState : oldStates) {
-                        if(oldState.getAcceptence() == State.Acceptance.ACCEPTING) {
-                            state.setAcceptance(State.Acceptance.ACCEPTING);
-                            break;
-                        }
-                    }
-                    System.out.println("Sollte nicht laufen!");
-                    stateUnion.put(state, new HashMap<>(){{put(null, oldStates);}});
-                }
-                for(Character c : getAlphabet(getVertices())) {
-                    if(s.getNext(new HashSet<>(){{add(c);}}) != null && s.getNext(new HashSet<>(){{add(c);}}).size() > 1) {
-                        Collection<State> oldStates = new HashSet<>();
-                        String name = "";
-                        for(Vertex v : s.getNext(new HashSet<>(){{add(c);}})) {
-                            name += v.getName();
-                            oldStates.add((State) v);
-                        }
-                        State state = new State(name);
-                        stateUnion.put(state, new HashMap<>(){{put(c, oldStates);}});
+            for(State superState : leafs.keySet()) {
+                roots.put(superState, new HashSet<Vertex>());
+                newStates.put(superState, new HashSet<>());
+                for(Vertex leaf : leafs.get(superState)) {
+                    roots.get(superState).add((State) leaf);
+                    newStates.get(superState).add((State) leaf);
+                    if(((State) leaf).getAcceptence() == State.Acceptance.ACCEPTING) {
+                        superState.setAcceptance(State.Acceptance.ACCEPTING);
                     }
                 }
             }
-        }
-        for(State s : stateUnion.keySet()) {
-            System.out.println(s);
-        }
-         */
-        /*
-        Set<State> transformed = new HashSet<>();
-        for(Vertex v : getStart()) {
-            transformed.add((State) v);
-        }
-        Collection<Vertex> roots = new HashSet<>(transformed);
-        do {
-            for(Vertex s : getProximity(null, new HashSet<>(){{add(null);}},roots)) {
-
-
+            leafs.clear();
+        } while (size < newStates.keySet().size());
+        for(State superState : newStates.keySet()) {
+            if(SetOperations.contains(getStart(),superState)) {
+                setStart(new HashSet<>(){{add(superState);}});
+                break;
             }
-        } while(!dfa.isDFA());
-         */
+        }
+        for(Edge e : newEdges) {
+            addEdge(e);
+        }
     }
     private Set<State> states() {
         Set<State> states = new HashSet<>();

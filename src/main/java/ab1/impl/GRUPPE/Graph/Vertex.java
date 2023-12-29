@@ -12,6 +12,7 @@ public interface Vertex {
     public String getName();
     public Collection<Character> getOutgoingEdges();
     public Collection<Character> getIncommingEdges();
+    public void setName(String name);
     public void addNext(Character c, Vertex v);
     public void addPrev(Character c, Vertex v);
     public void removeNext(Character c, Vertex v);

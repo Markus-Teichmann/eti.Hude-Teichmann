@@ -77,6 +77,12 @@ public class VertexImpl implements Vertex {
         }
         return null;
     }
+
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Override
     public void addNext(Character c, Vertex v) {
         if(next == null) {
@@ -134,10 +140,6 @@ public class VertexImpl implements Vertex {
         } else {
             return super.equals(o);
         }
-    }
-    @Override
-    public int hashCode() {
-        return 0;
     }
     @Override
     public String toString() {

@@ -86,7 +86,6 @@ public class SimpleTests {
         assertTrue(g.contains(s1));
         assertTrue(g.contains(s2));
         assertTrue(g.contains(end));
-
     }
     @Test
     public void addingEdges() {
@@ -122,5 +121,32 @@ public class SimpleTests {
     @Test
     public void alphabetTest() {
         g.getAlphabet(g.getVertices());
+    }
+    @Test
+    public void invertTestAdvanced() {
+        Vertex a = new VertexImpl("A");
+        Vertex ba = new VertexImpl("BA");
+        Vertex bc = new VertexImpl("BC");
+        Vertex c = new VertexImpl("C");
+        //Vertex f = new VertexImpl("F");
+        Graph g = new GraphImpl(a);
+        g.addEdge(new EdgeImpl(a, 'a', ba));
+        g.addEdge(new EdgeImpl(a, 'b', c));
+        g.addEdge(new EdgeImpl(ba, 'a', ba));
+        g.addEdge(new EdgeImpl(ba, 'b', bc));
+        g.addEdge(new EdgeImpl(bc, 'a', a));
+        g.addEdge(new EdgeImpl(bc, 'b', ba));
+        //g.addEdge(new EdgeImpl(c, 'a', f));
+        g.addEdge(new EdgeImpl(c, 'b', ba));
+        //g.addEdge(new EdgeImpl(f, 'a', f));
+        //g.addEdge(new EdgeImpl(f, 'b', f));
+        Graph h = g.clone();
+        assertEquals(g,h);
+        //System.out.println(h);
+        h.invert();
+        //System.out.println(h);
+        h.invert();
+        //System.out.println(h);
+        assertEquals(g,h);
     }
 }

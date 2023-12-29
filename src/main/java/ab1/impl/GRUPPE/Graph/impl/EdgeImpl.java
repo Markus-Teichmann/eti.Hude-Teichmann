@@ -41,15 +41,12 @@ public class EdgeImpl implements Edge {
     public boolean equals(Object o) {
         if(o instanceof Edge) {
             return ((Edge) o).getStartVertex().equals(this.start) &&
-                    ((Edge) o).getTransition() == this.transition &&
-                    ((Edge) o).getEndVertex().equals(this.end);
+                    ((Edge) o).getEndVertex().equals(this.end) &&
+                    (((Edge) o).getTransition() == this.transition ||
+                            (this.transition == null && ((Edge) o).getTransition() == null));
         } else {
             return super.equals(o);
         }
-    }
-    @Override
-    public int hashCode() {
-        return 0;
     }
     @Override
     public String toString() {
