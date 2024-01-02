@@ -93,6 +93,7 @@ public class VertexImpl implements Vertex {
             set.add(v);
             next.put(c, set);
         } else if(!next.get(c).contains(v)){
+            System.out.println(v);
             next.get(c).add(v);
         }
     }
@@ -143,7 +144,7 @@ public class VertexImpl implements Vertex {
     }
     @Override
     public String toString() {
-        return name;
+        return name + super.toString();
     }
     @Override
     public Vertex clone() {

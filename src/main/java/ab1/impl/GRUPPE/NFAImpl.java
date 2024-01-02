@@ -8,6 +8,7 @@ import ab1.impl.GRUPPE.Graph.Graph;
 import ab1.impl.GRUPPE.Graph.Vertex;
 import ab1.impl.GRUPPE.Graph.impl.EdgeImpl;
 import ab1.impl.GRUPPE.Graph.impl.GraphImpl;
+import ab1.impl.GRUPPE.Graph.impl.VertexImpl;
 import ab1.impl.GRUPPE.Graph.utils.SetOperations;
 
 import java.util.*;
@@ -139,10 +140,11 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     /*
         Diese Methode gibt eine Deep-Copy des aktuellen NFA's zurück.
-     */
+
     public NFAImpl clone() {
         return null;
     }
+     */
     @Override
     public Set<String> getStates() {
         Set<String> strings = new HashSet<String>();
@@ -191,7 +193,12 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA union(NFA other) throws FinalizedStateException {
-        return null;
+        NFAImpl unionNFA = new NFAImpl("q0");
+        ((NFAImpl) other).getState(other.getInitialState()).setName("q1");
+        unionNFA.addEdge(new EdgeImpl(unionNFA.getState("q0"), null, ((NFAImpl) other).getState(other.getInitialState())));
+        unionNFA.addEdge(new EdgeImpl(unionNFA.getState("q0"), null, this.getState(this.getInitialState())));
+
+        return unionNFA;
     }
     @Override
     public NFA intersection(NFA other) throws FinalizedStateException {

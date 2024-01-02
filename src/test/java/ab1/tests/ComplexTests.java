@@ -26,7 +26,7 @@ public class ComplexTests {
     public void union1Test() {
         var nfaA = buildCharLanguage('a');
         var nfaB = buildCharLanguage('b');
-
+        System.out.println("Testanfang");
         var testInstance = nfaA.union(nfaB);
 
         assertTrue(testInstance.acceptsWord("a"));

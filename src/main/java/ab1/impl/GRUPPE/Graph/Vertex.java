@@ -19,4 +19,5 @@ public interface Vertex {
     public void removePrev(Character c, Vertex v);
     public Vertex clone();
 
+
 }
