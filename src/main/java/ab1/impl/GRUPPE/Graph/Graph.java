@@ -20,6 +20,6 @@ public interface Graph {
     public void remove(Vertex v);
     public void remove(Edge e);
     public void remove(Graph g);
-    public Graph clone();
+    //public Graph clone();
     public void invert();
 }

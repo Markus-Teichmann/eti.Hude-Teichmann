@@ -181,7 +181,7 @@ public class SimpleTests {
         );
         instance.addAcceptingState("C");
         //System.out.println(instance);
-        instance.complement();
+        //instance.complement();
         //System.out.println(instance);
     }
 

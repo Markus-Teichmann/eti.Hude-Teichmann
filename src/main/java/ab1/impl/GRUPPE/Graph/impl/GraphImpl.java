@@ -268,12 +268,12 @@ public class GraphImpl implements Graph {
         }
         return null;
     }
+    /*
     @Override
     public Graph clone() {
         Collection<Vertex> vertices = new HashSet<>();
         for(Vertex v : getVertices()) {
             SetOperations.add(vertices, v.clone());
-            //vertices.add(v.clone());
         }
         Collection<Edge> edges = new HashSet<>();
         for(Edge e : getEdges(getVertices())) {
@@ -290,22 +290,12 @@ public class GraphImpl implements Graph {
                 }
             }
             SetOperations.add(edges, new EdgeImpl(start, e.getTransition(), end));
-            //edges.add(new EdgeImpl(start, e.getTransition(), end));
         }
         Collection<Vertex> start = new HashSet<>();
         for(Vertex v : vertices) {
             if(SetOperations.contains(this.start, v)) {
                 SetOperations.add(start, v);
             }
-            /*
-            for(Vertex vert : this.start) {
-
-                if(vert.equals(v)) {
-                    start.add(v);
-                    break;
-                }
-            }
-             */
         }
         Graph clone = new GraphImpl(start);
         for(Edge e : edges) {
@@ -313,6 +303,7 @@ public class GraphImpl implements Graph {
         }
         return clone;
     }
+     */
     @Override
     public void invert() {
         if(unconnected != null) {
