@@ -137,12 +137,6 @@ public class NFAImpl extends GraphImpl implements NFA {
             return (State) this.getVertex(name);
         }
     }
-    /*
-        Diese Methode gibt eine Deep-Copy des aktuellen NFA's zurück.
-     */
-    public NFAImpl clone() {
-        return null;
-    }
     @Override
     public Set<String> getStates() {
         Set<String> strings = new HashSet<String>();
@@ -211,10 +205,51 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA complement() throws FinalizedStateException {
-        toDFA();
-        //Zuerst in DFA, dann in das Komplement des DFAs. Der ist ja selbst auch ein NFA.
-        return null;
+        System.out.println(this);
+        NFAImpl clone = (NFAImpl) this.clone();
+        for (State s : clone.states()) {
+            if (s.getAcceptence() == State.Acceptance.ACCEPTING) {
+                s.setAcceptance(State.Acceptance.DENYING);
+            } else if (s.getAcceptence() == State.Acceptance.DENYING) {
+                s.setAcceptance(State.Acceptance.ACCEPTING);
+            }
+        }
+        System.out.println(clone);
+        return clone;
     }
+
+    /*
+        //Zuerst in DFA, dann in das Komplement des DFAs. Der ist ja selbst auch ein NFA.
+        Graph graph = clone();
+        Vertex start = (Vertex) graph.getStart().toArray()[0];
+        NFAImpl clone = new NFAImpl(start.getName());
+        clone.setStart(new HashSet<>(){{add(start);}});
+        System.out.println("Aktueller NFA:");
+        System.out.println(this);
+        System.out.println();
+        System.out.println("Geklonter NFA:");
+        System.out.println(clone);
+        clone.toDFA();
+        System.out.println();
+        System.out.println("NFA in DFA:");
+        System.out.println(clone);
+        clone.invert();
+        System.out.println();
+        System.out.println("DFA invertiert:");
+        System.out.println(clone);
+        for (State s : clone.states()) {
+            if (s.getAcceptence() == State.Acceptance.ACCEPTING) {
+                s.setAcceptance(State.Acceptance.DENYING);
+            } else if (s.getAcceptence() == State.Acceptance.DENYING) {
+                s.setAcceptance(State.Acceptance.ACCEPTING);
+            }
+        }
+        System.out.println();
+        System.out.println("Akzeptanz angepasst:");
+        System.out.println(clone);
+        return clone;
+    }
+     */
     @Override
     public boolean isFinalized() {
         return false;
@@ -268,5 +303,32 @@ public class NFAImpl extends GraphImpl implements NFA {
             }
         }
         return false;
+    }
+
+    @Override
+    public NFA clone() {
+        Map<Vertex, State> clonedStates = new HashMap<>();
+        for(State s : this.states()) {
+            State clone = new State(s.getName());
+            clone.setAcceptance(s.getAcceptence());
+            clonedStates.put(s, clone);
+        }
+        Collection<Edge> clonedEdges = new HashSet<>();
+        for(Edge e : this.getEdges(this.getVertices())) {
+            Vertex start = (Vertex) clonedStates.get(e.getStartVertex());
+            Vertex end = (Vertex) clonedStates.get(e.getEndVertex());
+            Edge clone = new EdgeImpl(start, e.getTransition(), end);
+            clonedEdges.add(clone);
+        }
+        Collection<Vertex> clonedStart = new HashSet<>();
+        for(Vertex v : this.getStart()) {
+            clonedStart.add((Vertex) clonedStates.get(v));
+        }
+        NFAImpl clone = new NFAImpl("clone");
+        clone.setStart(clonedStart);
+        for(Edge e : clonedEdges) {
+            clone.addEdge(e);
+        }
+        return clone;
     }
 }
