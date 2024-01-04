@@ -240,7 +240,9 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA plusOperator() throws FinalizedStateException {
-        return null;
+        NFAImpl plusNFA = (NFAImpl) this.clone();
+        plusNFA.kleeneStar();
+        return plusNFA;
     }
     @Override
     public NFA complement() throws FinalizedStateException {
