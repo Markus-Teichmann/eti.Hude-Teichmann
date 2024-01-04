@@ -200,7 +200,31 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA concatenation(NFA other) throws FinalizedStateException {
-        return null;
+        NFAImpl clone = (NFAImpl) this.clone();
+        for (String stateName : clone.getStates()) {
+            if(stateName.equals("START")){
+                clone.getState(stateName).setName("q0");
+            } else if (stateName.equals("ACCEPT")){
+                clone.getState(stateName).setName("q1");
+            }
+        }
+
+        for (String stateName : other.getStates()) {
+            if(stateName.equals("START")){
+                ((NFAImpl) other).getState(stateName).setName("q2");
+            } else if (stateName.equals("ACCEPT")){
+                ((NFAImpl) other).getState(stateName).setName("q3");
+            }
+        }
+
+        for(String acceptingStateName : clone.getAcceptingStates()){
+            clone.getState(acceptingStateName).setAcceptance(State.Acceptance.DENYING);
+        }
+
+        clone.addEdge(new EdgeImpl(clone.getState("q1"), null, ((NFAImpl) other).getState(other.getInitialState())));
+
+
+        return clone;
     }
     @Override
     public NFA kleeneStar() throws FinalizedStateException {
