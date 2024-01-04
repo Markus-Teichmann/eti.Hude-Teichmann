@@ -26,7 +26,7 @@ public class ComplexTests {
     public void union1Test() {
         var nfaA = buildCharLanguage('a');
         var nfaB = buildCharLanguage('b');
-        System.out.println("Testanfang");
+
         var testInstance = nfaA.union(nfaB);
 
         assertTrue(testInstance.acceptsWord("a"));
@@ -160,11 +160,11 @@ public class ComplexTests {
     private NFA buildCharLanguage(char c) {
         var instance = factory.buildNFA("START");
         instance.addTransition(
-            Transition.builder()
-                .fromState("START")
-                .readSymbol(c)
-                .toState("ACCEPT")
-                .build()
+                Transition.builder()
+                        .fromState("START")
+                        .readSymbol(c)
+                        .toState("ACCEPT")
+                        .build()
         );
         instance.addAcceptingState("ACCEPT");
         instance.finalizeAutomaton();

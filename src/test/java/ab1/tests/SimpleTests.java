@@ -179,10 +179,11 @@ public class SimpleTests {
                         .toState("B")
                         .build()
         );
+        System.out.println("Test");
         instance.addAcceptingState("C");
-        //System.out.println(instance);
-        //instance.complement();
-        //System.out.println(instance);
+        System.out.println(instance);
+        instance.complement();
+        System.out.println(instance);
     }
 
 }

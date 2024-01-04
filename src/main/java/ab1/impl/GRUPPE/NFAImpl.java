@@ -73,6 +73,10 @@ public class NFAImpl extends GraphImpl implements NFA {
         Map<State, Collection<Vertex>> roots = new HashMap<>(newStates);
         Map<State, Collection<? extends Vertex>> leafs = new HashMap<>();
         Collection<Edge> newEdges = new HashSet<>();
+        State trap = new State("Falle");
+        for(Character c : getAlphabet(getVertices())) {
+            newEdges.add(new EdgeImpl(trap, c, trap));
+        }
         int size;
         do {
             size = newStates.keySet().size();
@@ -93,7 +97,9 @@ public class NFAImpl extends GraphImpl implements NFA {
                                 break;
                             }
                         }
-                        if (!exsits && !next.isEmpty()) {
+                        if(next.isEmpty()) {
+                            newEdges.add(new EdgeImpl(root, c, trap));
+                        } else if (!exsits) {
                             State superState = new State(name);
                             newEdges.add(new EdgeImpl(root, c, superState));
                             leafs.put(superState, next);
@@ -148,6 +154,16 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
         return strings;
     }
+
+    @Override
+    public Collection<Transition> getTransitions() {
+        Collection<Transition> transitions = new HashSet<>();
+        for(Edge e : getEdges(getVertices())) {
+            transitions.add(new Transition(e.getStartVertex().getName(), e.getTransition(), e.getEndVertex().getName()));
+        }
+        return transitions;
+    }
+
     @Override
     public Set<String> getAcceptingStates() {
         Set<String> strings = new HashSet<String>();
@@ -247,6 +263,17 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA complement() throws FinalizedStateException {
+        NFAImpl clone = (NFAImpl) this.clone();
+        clone.toDFA();
+        for (State s : clone.states()) {
+            if (s.getAcceptence() == State.Acceptance.ACCEPTING) {
+                s.setAcceptance(State.Acceptance.DENYING);
+            } else if (s.getAcceptence() == State.Acceptance.DENYING) {
+                s.setAcceptance(State.Acceptance.ACCEPTING);
+            }
+        }
+        return clone;
+        /*
         System.out.println(this);
         NFAImpl clone = (NFAImpl) this.clone();
         clone.getState("ACCEPT").setName("q0");
@@ -269,6 +296,7 @@ public class NFAImpl extends GraphImpl implements NFA {
         clone.getState("qf").setAcceptance(State.Acceptance.ACCEPTING);
         System.out.println(clone);
         return clone;
+         */
     }
 
     /*
@@ -337,13 +365,23 @@ public class NFAImpl extends GraphImpl implements NFA {
         for(int i=0; i<word.length(); i++) {
             int size;
             roots.addAll(getProximity(null, new HashSet<Character>(){{add(null);}}, roots));
-            for(Vertex v : roots) {
-                Character c = word.charAt(i);
-                if(v.getNext(new HashSet<Character>(){{add(c);}}) == null) {
-                    leafs.remove(v); //Wenn wir einen Knoten erreicht haben von dem es nicht weiter geht müssen wir diesen entfernen.
-                } else {
-                    leafs.addAll(v.getNext(new HashSet<Character>(){{add(c);}}));
+            Character c = word.charAt(i);
+            if(getAlphabet(getVertices()).contains(c)) {
+                for(Vertex v : roots) {
+                    if(v.getNext(new HashSet<Character>(){{add(c);}}) == null) {
+                        leafs.remove(v); //Wenn wir einen Knoten erreicht haben von dem es nicht weiter geht müssen wir diesen entfernen.
+                    } else {
+                        leafs.addAll(v.getNext(new HashSet<Character>(){{add(c);}}));
+                    }
                 }
+            } else if(getState("Falle") != null) {
+                if(getState("Falle").getAcceptence() == State.Acceptance.ACCEPTING) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
             }
             leafs.addAll(getProximity(null, new HashSet<Character>(){{add(null);}}, leafs));
             roots.clear();
