@@ -11,6 +11,7 @@ import ab1.impl.GRUPPE.Graph.impl.GraphImpl;
 import ab1.impl.GRUPPE.Graph.impl.VertexImpl;
 import ab1.impl.GRUPPE.Graph.utils.SetOperations;
 
+import java.sql.Array;
 import java.util.*;
 
 public class NFAImpl extends GraphImpl implements NFA {
@@ -248,6 +249,16 @@ public class NFAImpl extends GraphImpl implements NFA {
     public NFA complement() throws FinalizedStateException {
         System.out.println(this);
         NFAImpl clone = (NFAImpl) this.clone();
+        clone.getState("ACCEPT").setName("q0");
+        char[] realAlphabet = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+        char alphabet = (Character) clone.getAlphabet(clone.getVertices()).toArray()[0];
+        for (char c : realAlphabet){
+            clone.addEdge(new EdgeImpl(clone.getState("q0"), c, clone.getState("qf")));
+            clone.addEdge(new EdgeImpl(clone.getState("qf"), c, clone.getState("qf")));
+            if (c != alphabet){
+                clone.addEdge(new EdgeImpl(clone.getState("START"), c, clone.getState("qf")));
+            }
+        }
         for (State s : clone.states()) {
             if (s.getAcceptence() == State.Acceptance.ACCEPTING) {
                 s.setAcceptance(State.Acceptance.DENYING);
@@ -255,6 +266,7 @@ public class NFAImpl extends GraphImpl implements NFA {
                 s.setAcceptance(State.Acceptance.ACCEPTING);
             }
         }
+        clone.getState("qf").setAcceptance(State.Acceptance.ACCEPTING);
         System.out.println(clone);
         return clone;
     }
