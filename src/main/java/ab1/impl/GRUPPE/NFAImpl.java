@@ -228,7 +228,15 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA kleeneStar() throws FinalizedStateException {
-        return null;
+        NFAImpl starNFA = new NFAImpl("q0");
+        starNFA.getState("q0").setAcceptance(State.Acceptance.ACCEPTING);
+        this.getState("START").setName("q1");
+        starNFA.addEdge(new EdgeImpl(starNFA.getState(starNFA.getInitialState()), null, this.getState("q1")));
+        for (String acceptingStateName : this.getAcceptingStates()) {
+            this.addEdge(new EdgeImpl(this.getState(acceptingStateName), null, this.getState("q1")));
+        }
+
+        return starNFA;
     }
     @Override
     public NFA plusOperator() throws FinalizedStateException {
