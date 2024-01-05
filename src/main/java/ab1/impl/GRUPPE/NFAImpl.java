@@ -213,7 +213,21 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA intersection(NFA other) throws FinalizedStateException {
-        return null;
+        System.out.println("this");
+        System.out.println(this);
+        NFA thisComplement = this.complement();
+        System.out.println("this.complement()");
+        System.out.println(thisComplement);
+
+        //System.out.println("other");
+        //System.out.println(other);
+        NFA otherComplement = other.complement();
+        //System.out.println("other.complement()");
+        //System.out.println(otherComplement);
+        //System.out.println("nfaBComplement");
+        //System.out.println(otherComplement);
+        NFA union = thisComplement.union(otherComplement);
+        return union.complement();
     }
     @Override
     public NFA concatenation(NFA other) throws FinalizedStateException {
@@ -264,7 +278,11 @@ public class NFAImpl extends GraphImpl implements NFA {
     @Override
     public NFA complement() throws FinalizedStateException {
         NFAImpl clone = (NFAImpl) this.clone();
+        //System.out.println("clone");
+        //System.out.println(clone);
         clone.toDFA();
+        //System.out.println("clone.toDFA()");
+        //System.out.println(clone);
         for (State s : clone.states()) {
             if (s.getAcceptence() == State.Acceptance.ACCEPTING) {
                 s.setAcceptance(State.Acceptance.DENYING);

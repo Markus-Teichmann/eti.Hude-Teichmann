@@ -206,11 +206,12 @@ public class GraphImpl implements Graph {
                 }
                 SetOperations.add(unconnected, new GraphImpl(edge.getStartVertex()));
                 //unconnected.add(new GraphImpl(edge.getStartVertex()));
-            } else if(unconnected != null) {
+            }
+            if(unconnected != null) {
                 Collection<Graph> graphsToBeRemoved = new HashSet<>();
                 for(Graph g : unconnected) {
                     if (g.contains(edge.getEndVertex())) {
-                        SetOperations.add(graphsToBeRemoved, getSubGraph(edge.getEndVertex()));
+                        SetOperations.add(graphsToBeRemoved, g);
                         //graphsToBeRemoved.add(getSubGraph(edge.getEndVertex()));
                     }
                 }
@@ -247,22 +248,6 @@ public class GraphImpl implements Graph {
         for(Vertex v : getVertices()) {
             if(v.getName().equals(name)) {
                 return v;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public Graph getSubGraph(Vertex v) {
-        if(SetOperations.contains(getProximity(null, getAlphabet(getVertices()), start),v)) {
-            if(unconnected == null) {
-                return this;
-            } else {
-                for(Graph g : unconnected) {
-                    if(g.contains(v)) {
-                        return g.getSubGraph(v);
-                    }
-                }
             }
         }
         return null;
