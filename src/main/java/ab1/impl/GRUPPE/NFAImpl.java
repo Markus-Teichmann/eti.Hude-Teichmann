@@ -43,6 +43,9 @@ public class NFAImpl extends GraphImpl implements NFA {
         return true;
     }
     private void toDFA() {
+        System.out.println("Checking ToDFA");
+        System.out.println("this");
+        System.out.println(this);
         setUnconnected(null);
         Map<State, Collection<Vertex>> newStates = new HashMap<>();
         for(Vertex v : getStart()) {
@@ -130,6 +133,30 @@ public class NFAImpl extends GraphImpl implements NFA {
         for(Edge e : newEdges) {
             addEdge(e);
         }
+        rename('q');
+        System.out.println("Created DFA");
+        System.out.println(this);
+    }
+    private void rename(Character c) {
+        int i = 0;
+        for(State s : states()) {
+            if(!s.getName().equals("Falle")) {
+                s.setName(c.toString() + i);
+                i++;
+            }
+        }
+    }
+    private void renameAll(Character c) {
+        int i = 0;
+        for(State s : states()) {
+            s.setName(c.toString() + i);
+            i++;
+        }
+    }
+    private NFAImpl getRenamedClone(Character c) {
+        NFAImpl clone = this.clone();
+        clone.renameAll(c);
+        return clone;
     }
     private Set<State> states() {
         Set<State> states = new HashSet<>();
@@ -204,34 +231,57 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA union(NFA other) throws FinalizedStateException {
-        NFAImpl unionNFA = new NFAImpl("q0");
-        ((NFAImpl) other).getState(other.getInitialState()).setName("q1");
-        unionNFA.addEdge(new EdgeImpl(unionNFA.getState("q0"), null, ((NFAImpl) other).getState(other.getInitialState())));
-        unionNFA.addEdge(new EdgeImpl(unionNFA.getState("q0"), null, this.getState(this.getInitialState())));
+        NFAImpl thisClone = this.getRenamedClone('q');
+        NFAImpl otherClone = ((NFAImpl) other).getRenamedClone('k');
+        NFAImpl unionNFA = new NFAImpl("Start");
+        unionNFA.addEdge(new EdgeImpl(unionNFA.getState(unionNFA.getInitialState()), null, otherClone.getState(otherClone.getInitialState())));
+        unionNFA.addEdge(new EdgeImpl(unionNFA.getState(unionNFA.getInitialState()), null, thisClone.getState(thisClone.getInitialState())));
+        unionNFA.rename('q');
 
         return unionNFA;
     }
     @Override
     public NFA intersection(NFA other) throws FinalizedStateException {
-        System.out.println("this");
-        System.out.println(this);
-        NFA thisComplement = this.complement();
-        System.out.println("this.complement()");
-        System.out.println(thisComplement);
+        NFAImpl thisClone = getRenamedClone('q');
+        NFAImpl thisComplement = (NFAImpl) thisClone.complement();
+        thisComplement.renameAll('q');
+        NFAImpl otherClone = ((NFAImpl) other).getRenamedClone('k');
+        NFAImpl otherComplement = (NFAImpl) otherClone.complement();
+        otherComplement.renameAll('k');
+        //System.out.println("this");
+        //System.out.println(this);
+        //System.out.println("thisClone");
+        //System.out.println(thisClone);
+        //System.out.println("thisComplement");
+        //System.out.println(thisComplement);
+        //System.out.println("other");
+        //System.out.println(other);
+        //System.out.println("otherClone");
+        //System.out.println(otherClone);
+        //System.out.println("otherComplement");
+        //System.out.println(otherComplement);
+        //System.out.println("this.complement()");
+        //System.out.println(thisComplement);
 
         //System.out.println("other");
         //System.out.println(other);
-        NFA otherComplement = other.complement();
+
         //System.out.println("other.complement()");
         //System.out.println(otherComplement);
-        //System.out.println("nfaBComplement");
-        //System.out.println(otherComplement);
-        NFA union = thisComplement.union(otherComplement);
-        return union.complement();
+
+        NFAImpl union = (NFAImpl) thisComplement.union(otherComplement);
+        //System.out.println("union");
+        //System.out.println(union);
+        System.out.println("Testanfang");
+        NFAImpl unionComplement = (NFAImpl) union.complement();
+        //System.out.println("union complement");
+        //System.out.println(unionComplement);
+
+        return unionComplement;
     }
     @Override
     public NFA concatenation(NFA other) throws FinalizedStateException {
-        NFAImpl clone = (NFAImpl) this.clone();
+        NFAImpl clone = this.clone();
         for (String stateName : clone.getStates()) {
             if(stateName.equals("START")){
                 clone.getState(stateName).setName("q0");
@@ -253,6 +303,7 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
 
         clone.addEdge(new EdgeImpl(clone.getState("q1"), null, ((NFAImpl) other).getState(other.getInitialState())));
+        clone.rename('q');
 
 
         return clone;
@@ -266,18 +317,20 @@ public class NFAImpl extends GraphImpl implements NFA {
         for (String acceptingStateName : this.getAcceptingStates()) {
             this.addEdge(new EdgeImpl(this.getState(acceptingStateName), null, this.getState("q1")));
         }
+        starNFA.rename('q');
 
         return starNFA;
     }
     @Override
     public NFA plusOperator() throws FinalizedStateException {
-        NFAImpl plusNFA = (NFAImpl) this.clone();
+        NFAImpl plusNFA = this.clone();
         plusNFA.kleeneStar();
+        plusNFA.rename('q');
         return plusNFA;
     }
     @Override
     public NFA complement() throws FinalizedStateException {
-        NFAImpl clone = (NFAImpl) this.clone();
+        NFAImpl clone = this.clone();
         //System.out.println("clone");
         //System.out.println(clone);
         clone.toDFA();
@@ -290,6 +343,7 @@ public class NFAImpl extends GraphImpl implements NFA {
                 s.setAcceptance(State.Acceptance.ACCEPTING);
             }
         }
+        clone.rename('q');
         return clone;
         /*
         System.out.println(this);
@@ -413,9 +467,32 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
         return false;
     }
+    /* Maybe gute Alternative zur Fallenerkennung:
+    } else {
+               boolean graphContainsTrap = false;
+               State trap = null;
+               for(State s : states()) {
+                   if(s.getNext(getAlphabet(getVertices())) != null &&
+                   s.getNext(getAlphabet(getVertices())).size() == 1 &&
+                   s.getNext(getAlphabet(getVertices())).contains(s)) {
+                       graphContainsTrap = true;
+                       trap = s;
+                   }
+               }
+               if(graphContainsTrap) {
+                   if(trap.getAcceptence() == State.Acceptance.ACCEPTING) {
+                       return true;
+                   } else {
+                       return false;
+                   }
+               } else {
+                   return false;
+               }
+
+     */
 
     @Override
-    public NFA clone() {
+    public NFAImpl clone() {
         Map<Vertex, State> clonedStates = new HashMap<>();
         for(State s : this.states()) {
             State clone = new State(s.getName());

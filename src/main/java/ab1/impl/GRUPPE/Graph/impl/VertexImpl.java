@@ -143,7 +143,7 @@ public class VertexImpl implements Vertex {
     }
     @Override
     public String toString() {
-        return name;
+        return name + " " + super.toString();
     }
     @Override
     public Vertex clone() {

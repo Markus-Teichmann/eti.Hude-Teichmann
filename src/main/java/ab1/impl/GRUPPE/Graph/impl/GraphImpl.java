@@ -252,7 +252,7 @@ public class GraphImpl implements Graph {
         }
         return null;
     }
-    /*
+
     @Override
     public Graph clone() {
         Collection<Vertex> vertices = new HashSet<>();
@@ -287,7 +287,6 @@ public class GraphImpl implements Graph {
         }
         return clone;
     }
-     */
     @Override
     public void invert() {
         if(unconnected != null) {
