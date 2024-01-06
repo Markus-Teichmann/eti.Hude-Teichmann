@@ -213,7 +213,13 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA intersection(NFA other) throws FinalizedStateException {
-        return null;
+        NFAImpl clone = (NFAImpl) this.clone();
+        clone.complement();
+        ((NFAImpl) other).complement();
+        clone.union(other);
+        clone.complement();
+        System.out.println(clone);
+        return clone;
     }
     @Override
     public NFA concatenation(NFA other) throws FinalizedStateException {
