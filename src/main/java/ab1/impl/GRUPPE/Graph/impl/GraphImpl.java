@@ -197,6 +197,7 @@ public class GraphImpl implements Graph {
     }
     @Override
     public void addEdge(Edge edge) {
+        //System.out.println(edge + " contains = " + contains(edge));
         if(!contains(edge)) {
             edge.getStartVertex().addNext(edge.getTransition(), edge.getEndVertex());
             edge.getEndVertex().addPrev(edge.getTransition(), edge.getStartVertex());

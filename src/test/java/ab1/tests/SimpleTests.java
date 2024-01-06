@@ -233,7 +233,11 @@ public class SimpleTests {
         instance.addAcceptingState("q4");
         instance.addAcceptingState("q2");
         System.out.println(instance);
-        instance.complement();
+        System.out.println(instance.complement());
+    }
+    @Test
+    public void myComplementTest2() {
+
     }
 
 }
