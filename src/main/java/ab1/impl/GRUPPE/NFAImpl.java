@@ -303,40 +303,47 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA intersection(NFA other) throws FinalizedStateException {
-        NFAImpl thisClone = getRenamedClone('q');
-        NFAImpl thisComplement = (NFAImpl) thisClone.complement();
-        thisComplement.renameAll('q');
-        NFAImpl otherClone = ((NFAImpl) other).getRenamedClone('k');
-        NFAImpl otherComplement = (NFAImpl) otherClone.complement();
-        otherComplement.renameAll('k');
-        System.out.println("this");
-        System.out.println(this);
-        System.out.println("thisClone");
-        System.out.println(thisClone);
-        System.out.println("thisComplement");
-        System.out.println(thisComplement);
-        System.out.println("other");
-        System.out.println(other);
-        System.out.println("otherClone");
-        System.out.println(otherClone);
-        System.out.println("otherComplement");
-        System.out.println(otherComplement);
+        Collection<Character> thisAlphabet = this.getAlphabet(getVertices());
+        Collection<Character> otherAlphabet = ((NFAImpl) other).getAlphabet(((NFAImpl) other).getVertices());
+        thisAlphabet.retainAll(otherAlphabet);
+        if(thisAlphabet.isEmpty()) {
+            return new NFAImpl("Falle");
+        } else {
+            NFAImpl thisClone = getRenamedClone('q');
+            NFAImpl thisComplement = (NFAImpl) thisClone.complement();
+            thisComplement.renameAll('q');
+            NFAImpl otherClone = ((NFAImpl) other).getRenamedClone('k');
+            NFAImpl otherComplement = (NFAImpl) otherClone.complement();
+            otherComplement.renameAll('k');
+            System.out.println("this");
+            System.out.println(this);
+            System.out.println("thisClone");
+            System.out.println(thisClone);
+            System.out.println("thisComplement");
+            System.out.println(thisComplement);
+            System.out.println("other");
+            System.out.println(other);
+            System.out.println("otherClone");
+            System.out.println(otherClone);
+            System.out.println("otherComplement");
+            System.out.println(otherComplement);
 
-        //System.out.println("other");
-        //System.out.println(other);
+            //System.out.println("other");
+            //System.out.println(other);
 
-        //System.out.println("other.complement()");
-        //System.out.println(otherComplement);
+            //System.out.println("other.complement()");
+            //System.out.println(otherComplement);
 
-        NFAImpl union = (NFAImpl) thisComplement.union(otherComplement);
-        System.out.println("union");
-        System.out.println(union);
-        System.out.println("Testanfang");
-        NFAImpl unionComplement = (NFAImpl) union.complement();
-        //System.out.println("union complement");
-        //System.out.println(unionComplement);
+            NFAImpl union = (NFAImpl) thisComplement.union(otherComplement);
+            System.out.println("union");
+            System.out.println(union);
+            System.out.println("Testanfang");
+            NFAImpl unionComplement = (NFAImpl) union.complement();
+            //System.out.println("union complement");
+            //System.out.println(unionComplement);
 
-        return unionComplement;
+            return unionComplement;
+        }
     }
     @Override
     public NFA concatenation(NFA other) throws FinalizedStateException {

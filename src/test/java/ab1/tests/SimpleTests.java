@@ -237,6 +237,78 @@ public class SimpleTests {
     }
     @Test
     public void myComplementTest2() {
+        var instance = factory.buildNFA("q0");
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol(null)
+                        .fromState("q0")
+                        .toState("q1")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol(null)
+                        .fromState("q0")
+                        .toState("q4")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('b')
+                        .fromState("q1")
+                        .toState("q2")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('b')
+                        .fromState("q2")
+                        .toState("q3")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('b')
+                        .fromState("q3")
+                        .toState("q3")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol(null)
+                        .fromState("q0")
+                        .toState("q1")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('a')
+                        .fromState("q4")
+                        .toState("q5")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('a')
+                        .fromState("q5")
+                        .toState("q6")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('a')
+                        .fromState("q6")
+                        .toState("q6")
+                        .build()
+        );
+        instance.addAcceptingState("q1");
+        instance.addAcceptingState("q3");
+        instance.addAcceptingState("q4");
+        instance.addAcceptingState("q6");
+
+        System.out.println(instance);
+        System.out.println(instance.complement());
+
 
     }
 
