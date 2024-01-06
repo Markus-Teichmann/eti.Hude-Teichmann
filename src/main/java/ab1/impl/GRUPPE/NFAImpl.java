@@ -11,12 +11,14 @@ import ab1.impl.GRUPPE.Graph.impl.GraphImpl;
 import ab1.impl.GRUPPE.Graph.impl.VertexImpl;
 import ab1.impl.GRUPPE.Graph.utils.SetOperations;
 
+import javax.swing.undo.StateEditable;
 import java.sql.Array;
 import java.util.*;
 
 public class NFAImpl extends GraphImpl implements NFA {
     public NFAImpl(String initialStateName) {
         super(new State(initialStateName));
+        this.automatonStates = AutomatonStates.EDITABLE;
     }
     private boolean contains(String name) {
         for(Vertex v : this.getVertices()) {
@@ -337,13 +339,19 @@ public class NFAImpl extends GraphImpl implements NFA {
         return clone;
     }
      */
+    private enum AutomatonStates {
+        EDITABLE,
+        NOT_EDITABLE
+    }
+
+    private AutomatonStates automatonStates;
     @Override
     public boolean isFinalized() {
-        return false;
+        return automatonStates == AutomatonStates.NOT_EDITABLE;
     }
     @Override
     public void finalizeAutomaton() {
-
+        automatonStates = AutomatonStates.NOT_EDITABLE;
     }
     @Override
     public boolean isFinite() {
