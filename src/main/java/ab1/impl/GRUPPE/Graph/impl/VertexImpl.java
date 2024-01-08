@@ -77,12 +77,10 @@ public class VertexImpl implements Vertex {
         }
         return null;
     }
-
     @Override
     public void setName(String name) {
         this.name = name;
     }
-
     @Override
     public void addNext(Character c, Vertex v) {
         if(next == null) {

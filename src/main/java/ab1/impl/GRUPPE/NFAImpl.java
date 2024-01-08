@@ -1,5 +1,4 @@
 package ab1.impl.GRUPPE;
-
 import ab1.FinalizedStateException;
 import ab1.NFA;
 import ab1.Transition;
@@ -9,8 +8,6 @@ import ab1.impl.GRUPPE.Graph.impl.EdgeImpl;
 import ab1.impl.GRUPPE.Graph.impl.GraphImpl;
 import ab1.impl.GRUPPE.Graph.utils.SetOperations;
 
-import javax.swing.undo.StateEditable;
-import java.sql.Array;
 import java.util.*;
 
 public class NFAImpl extends GraphImpl implements NFA {
@@ -246,6 +243,9 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA intersection(NFA other) throws FinalizedStateException {
+        if(this.getAcceptingStates().isEmpty()){
+            throw new FinalizedStateException("NFA has no edges");
+        }
         Collection<Character> thisAlphabet = this.getAlphabet(getVertices());
         Collection<Character> otherAlphabet = ((NFAImpl) other).getAlphabet(((NFAImpl) other).getVertices());
         thisAlphabet.retainAll(otherAlphabet);
@@ -288,6 +288,7 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
         clone.addEdge(new EdgeImpl(clone.getState("q1"), null, ((NFAImpl) other).getState(other.getInitialState())));
         clone.rename('q');
+        clone.finalizeAutomaton();
         return clone;
     }
     @Override
@@ -340,7 +341,6 @@ public class NFAImpl extends GraphImpl implements NFA {
         EDITABLE,
         NOT_EDITABLE
     }
-
     private AutomatonStates automatonStates;
     @Override
     public boolean isFinalized() {
@@ -406,7 +406,6 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
         return false;
     }
-
     @Override
     public NFAImpl clone() {
         Map<Vertex, State> clonedStates = new HashMap<>();

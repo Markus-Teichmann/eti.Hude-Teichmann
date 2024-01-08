@@ -18,4 +18,5 @@ public interface Graph {
     public Vertex getVertex(String name);
     public void remove(Graph g);
     public void invert();
+    public Graph clone();
 }

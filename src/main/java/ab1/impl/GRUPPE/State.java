@@ -15,7 +15,6 @@ public class State extends VertexImpl implements Vertex {
     public void setAcceptance(Acceptance acceptance) {
         this.acceptance = acceptance;
     }
-
     public Acceptance getAcceptence() {
         return this.acceptance;
     }
