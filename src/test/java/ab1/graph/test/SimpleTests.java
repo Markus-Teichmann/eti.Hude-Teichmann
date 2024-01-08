@@ -1,11 +1,11 @@
 package ab1.graph.test;
 
-import ab1.impl.GRUPPE.Graph.Edge;
-import ab1.impl.GRUPPE.Graph.Graph;
-import ab1.impl.GRUPPE.Graph.Vertex;
-import ab1.impl.GRUPPE.Graph.impl.EdgeImpl;
-import ab1.impl.GRUPPE.Graph.impl.GraphImpl;
-import ab1.impl.GRUPPE.Graph.impl.VertexImpl;
+import ab1.impl.gruppe32_hude_teichmann.graph.Edge;
+import ab1.impl.gruppe32_hude_teichmann.graph.Graph;
+import ab1.impl.gruppe32_hude_teichmann.graph.Vertex;
+import ab1.impl.gruppe32_hude_teichmann.graph.impl.EdgeImpl;
+import ab1.impl.gruppe32_hude_teichmann.graph.impl.GraphImpl;
+import ab1.impl.gruppe32_hude_teichmann.graph.impl.VertexImpl;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
