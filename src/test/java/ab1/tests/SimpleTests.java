@@ -5,8 +5,7 @@ import ab1.NFAProvider;
 import ab1.Transition;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SimpleTests {
 
@@ -80,5 +79,52 @@ public class SimpleTests {
         assertEquals("START", instance.getInitialState());
     }
 
-
+    @Test
+    public void myFiniteTest() {
+        var instance = factory.buildNFA("START");
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('a')
+                        .fromState("START")
+                        .toState("S1")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol('a')
+                        .fromState("S1")
+                        .toState("S2")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol(null)
+                        .fromState("S2")
+                        .toState("S3")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol(null)
+                        .fromState("S3")
+                        .toState("S2")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol(null)
+                        .fromState("S3")
+                        .toState("S4")
+                        .build()
+        );
+        instance.addTransition(
+                Transition.builder()
+                        .readSymbol(null)
+                        .fromState("S5")
+                        .toState("S6")
+                        .build()
+        );
+        instance.addAcceptingState("S2");
+        assertFalse(instance.isFinite());
+    }
 }

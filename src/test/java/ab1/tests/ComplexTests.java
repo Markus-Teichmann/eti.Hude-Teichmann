@@ -160,11 +160,11 @@ public class ComplexTests {
     private NFA buildCharLanguage(char c) {
         var instance = factory.buildNFA("START");
         instance.addTransition(
-            Transition.builder()
-                .fromState("START")
-                .readSymbol(c)
-                .toState("ACCEPT")
-                .build()
+                Transition.builder()
+                        .fromState("START")
+                        .readSymbol(c)
+                        .toState("ACCEPT")
+                        .build()
         );
         instance.addAcceptingState("ACCEPT");
         instance.finalizeAutomaton();

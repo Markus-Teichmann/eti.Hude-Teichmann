@@ -5,8 +5,9 @@ import ab1.NFAFactory;
 import ab1.NFAProvider;
 import ab1.Transition;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FinalizeTests {
 
@@ -57,20 +58,18 @@ public class FinalizeTests {
     @Test
     public void finalize4Test() {
         var instance = factory.buildNFA("START");
-
         assertThrows(
                 FinalizedStateException.class,
-                () -> instance.kleeneStar()
+                instance::kleeneStar
         );
     }
 
     @Test
     public void finalize5Test() {
         var instance = factory.buildNFA("START");
-
         assertThrows(
                 FinalizedStateException.class,
-                () -> instance.plusOperator()
+                instance::plusOperator
         );
     }
 
@@ -100,7 +99,7 @@ public class FinalizeTests {
 
         assertThrows(
                 FinalizedStateException.class,
-                () -> instance.complement()
+                instance::complement
         );
     }
 
