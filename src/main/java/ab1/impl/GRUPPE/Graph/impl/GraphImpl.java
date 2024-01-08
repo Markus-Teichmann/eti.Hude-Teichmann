@@ -28,20 +28,7 @@ public class GraphImpl implements Graph {
             if(v.getOutgoingEdges() != null) {
                 for (Character c : v.getOutgoingEdges()) {
                     for (Vertex vertex : v.getNext(new HashSet<Character>(){{add(c);}})) {
-                        //edges.add(new EdgeImpl(v, c, vertex));
                         SetOperations.add(edges, new EdgeImpl(v, c, vertex));
-                        /*
-                        Edge edge = new EdgeImpl(v, c, vertex);
-                        boolean contains = false;
-                        for(Edge e : edges) {
-                            if(e.equals(edge)) {
-                                contains = true;
-                            }
-                        }
-                        if(!contains) {
-                            edges.add(edge);
-                        }
-                         */
                     }
                 }
             }
@@ -54,20 +41,7 @@ public class GraphImpl implements Graph {
             if(v.getIncommingEdges() != null) {
                 for (Character c : v.getIncommingEdges()) {
                     for (Vertex vertex : v.getPrev(new HashSet<Character>(){{add(c);}})) {
-                        //edges.add(new EdgeImpl(vertex, c, v));
                         SetOperations.add(edges, new EdgeImpl(vertex, c, v));
-                        /*
-                        Edge edge = new EdgeImpl(vertex, c, v);
-                        boolean contains = false;
-                        for(Edge e : edges) {
-                            if(e.equals(edge)) {
-                                contains = true;
-                            }
-                        }
-                        if(!contains) {
-                            edges.add(edge);
-                        }
-                         */
                     }
                 }
             }
@@ -82,7 +56,6 @@ public class GraphImpl implements Graph {
     public Collection<Vertex> getVertices() {
         Collection<Vertex> connected = getProximity(null, null, start);
         SetOperations.addAll(connected, start);
-        //connected.addAll(start);
         if(unconnected != null) {
             for(Graph g : unconnected) {
                 connected.addAll(g.getVertices());
@@ -94,20 +67,6 @@ public class GraphImpl implements Graph {
     public Collection<Edge> getEdges(Collection<Vertex> vertices) {
         Collection<Edge> edges = getForwardEdges(vertices);
         SetOperations.addAll(edges, getBackwardEdges(vertices));
-        //edges.addAll(getBackwardEdges(vertices));
-        /*
-        for(Edge e : getBackwardEdges(vertices)) {
-            boolean contains = false;
-            for(Edge edge : edges) {
-                if(edge.equals(e)) {
-                    contains = true;
-                }
-            }
-            if(!contains) {
-                edges.add(e);
-            }
-        }
-         */
         return edges;
     }
     @Override
@@ -115,7 +74,6 @@ public class GraphImpl implements Graph {
         Collection<Character> alphabet = new HashSet<>();
         for(Edge e : getEdges(vertices)) {
             SetOperations.add(alphabet, e.getTransition());
-            //alphabet.add(e.getTransition());
         }
         return alphabet;
     }
@@ -146,31 +104,13 @@ public class GraphImpl implements Graph {
             return proximity;
         }
     }
-
-
     @Override
     public boolean contains(Vertex vert) {
         return SetOperations.contains(getVertices(), vert);
-        /*
-        for(Vertex v : getVertices()) {
-            if(v.equals(vert)) {
-                return true;
-            }
-        }
-        return false;
-         */
     }
     @Override
     public boolean contains(Edge edge) {
         return SetOperations.contains(getEdges(getVertices()), edge);
-        /*
-        for(Edge e : getEdges(getVertices())) {
-            if(e.equals(edge)) {
-                return true;
-            }
-        }
-        return false;
-         */
     }
     @Override
     public boolean contains(Graph graph) {
@@ -193,7 +133,6 @@ public class GraphImpl implements Graph {
                 this.unconnected = new HashSet<>();
             }
             SetOperations.add(unconnected, new GraphImpl(v));
-            //unconnected.add(new GraphImpl(v));
         }
     }
     @Override
@@ -206,13 +145,12 @@ public class GraphImpl implements Graph {
                     unconnected = new HashSet<>();
                 }
                 SetOperations.add(unconnected, new GraphImpl(edge.getStartVertex()));
-                //unconnected.add(new GraphImpl(edge.getStartVertex()));
-            } else if(unconnected != null) {
+            }
+            if(unconnected != null) {
                 Collection<Graph> graphsToBeRemoved = new HashSet<>();
                 for(Graph g : unconnected) {
                     if (g.contains(edge.getEndVertex())) {
-                        SetOperations.add(graphsToBeRemoved, getSubGraph(edge.getEndVertex()));
-                        //graphsToBeRemoved.add(getSubGraph(edge.getEndVertex()));
+                        SetOperations.add(graphsToBeRemoved, g);
                     }
                 }
                 for(Graph g : graphsToBeRemoved) {
@@ -220,14 +158,6 @@ public class GraphImpl implements Graph {
                 }
             }
         }
-    }
-    @Override
-    public void remove(Vertex v) {
-
-    }
-    @Override
-    public void remove(Edge e) {
-
     }
     @Override
     public void remove(Graph graph) {
@@ -252,23 +182,6 @@ public class GraphImpl implements Graph {
         }
         return null;
     }
-
-    @Override
-    public Graph getSubGraph(Vertex v) {
-        if(SetOperations.contains(getProximity(null, getAlphabet(getVertices()), start),v)) {
-            if(unconnected == null) {
-                return this;
-            } else {
-                for(Graph g : unconnected) {
-                    if(g.contains(v)) {
-                        return g.getSubGraph(v);
-                    }
-                }
-            }
-        }
-        return null;
-    }
-    /*
     @Override
     public Graph clone() {
         Collection<Vertex> vertices = new HashSet<>();
@@ -303,7 +216,6 @@ public class GraphImpl implements Graph {
         }
         return clone;
     }
-     */
     @Override
     public void invert() {
         if(unconnected != null) {
@@ -313,21 +225,6 @@ public class GraphImpl implements Graph {
         }
         Collection<Vertex> vertices = getProximity(null, getAlphabet(getVertices()), start);
         SetOperations.addAll(vertices, start);
-        /*
-        Collection<Vertex> vertices = new HashSet<>();
-        for(Vertex v : getProximity(null, getAlphabet(getVertices()), start)) {
-            boolean contains = false;
-            for(Vertex vert : vertices) {
-                if(vert.equals(v)) {
-                    contains = true;
-                    break;
-                }
-            }
-            if(!contains) {
-                vertices.add(v);
-            }
-        }
-         */
         Collection<Edge> forwardEdges = getForwardEdges(vertices);
         Collection<Edge> backwardEdges = getBackwardEdges(vertices);
         for(Edge e : forwardEdges) {
@@ -348,37 +245,6 @@ public class GraphImpl implements Graph {
          */
         Collection<Vertex> newVertices = getProximity(null, null, start);
         SetOperations.addAll(newVertices, start);
-        /*
-        Collection<Vertex> newVertices = new HashSet<>(start);
-        for(Vertex v : getProximity(null, null, start)) {
-            boolean contains = false;
-            for(Vertex vert : newVertices) {
-                if(vert.equals(v)) {
-                    contains = true;
-                    break;
-                }
-            }
-            if(!contains) {
-                newVertices.add(v);
-            }
-        }
-         */
-        //Schauen wir ob wir jetzt im Vergleich zu vorhin weitere Vertecies erreichen:
-        /*
-        boolean equals = true;
-        for(Vertex v : vertices) {
-            boolean contains = false;
-            for(Vertex vert : newVertices) {
-                if(vert.equals(v)) {
-                    contains = true;
-                    break;
-                }
-            }
-            if(!contains) {
-                equals = false;
-            }
-        }
-         */
         if(!SetOperations.equals(newVertices,vertices)) {
         /*
             Da wir hier eine geschlossenen Graphen betrachten, muss der Invertierte auch wieder ein geschlossener
@@ -411,21 +277,14 @@ public class GraphImpl implements Graph {
                         if (((Vertex) vertices.toArray()[j]).getNext(getAlphabet(vertices)) != null &&
                                 !((Vertex) vertices.toArray()[j]).getNext(getAlphabet(vertices)).isEmpty()) {
                             SetOperations.add(end, (Vertex) vertices.toArray()[j]);
-                            //end.add((Vertex) vertices.toArray()[j]);
                         }
                     }
                 }
                 collection.clear();
                 SetOperations.addAll(collection, getProximity(null, getAlphabet(vertices), end));
                 SetOperations.addAll(collection, end);
-                /*
-                collection.clear();
-                collection.addAll(getProximity(null, getAlphabet(vertices), end));
-                collection.addAll(end);
-                 */
                 i++;
             } while (!SetOperations.equals(collection, vertices));
-            //} while (collection.size() != vertices.size());
             start.clear();
             start.addAll(end);
         }

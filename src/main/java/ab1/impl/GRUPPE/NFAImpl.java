@@ -4,11 +4,9 @@ import ab1.FinalizedStateException;
 import ab1.NFA;
 import ab1.Transition;
 import ab1.impl.GRUPPE.Graph.Edge;
-import ab1.impl.GRUPPE.Graph.Graph;
 import ab1.impl.GRUPPE.Graph.Vertex;
 import ab1.impl.GRUPPE.Graph.impl.EdgeImpl;
 import ab1.impl.GRUPPE.Graph.impl.GraphImpl;
-import ab1.impl.GRUPPE.Graph.impl.VertexImpl;
 import ab1.impl.GRUPPE.Graph.utils.SetOperations;
 
 import javax.swing.undo.StateEditable;
@@ -28,29 +26,12 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
         return false;
     }
-    private boolean isDFA() {
-        if(getVertices().size() > getStart().size() + getProximity(null, getAlphabet(getVertices()), getStart()).size()) {
-            return false;
-        }
-        if(getAlphabet(getVertices()).contains(null)) {
-            return false;
-        }
-        for(State s : states()) {
-            for(Character c : getAlphabet(getVertices())) {
-                if(s.getNext(new HashSet<>(){{add(c);}}).size() > 1) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
     private void toDFA() {
+        //Startvorbereitungen
         setUnconnected(null);
         Map<State, Collection<Vertex>> newStates = new HashMap<>();
-        for(Vertex v : getStart()) {
-            newStates.put(new State(v.getName()), getStart());
-            break; //Nach konstruktor ist hier sowieso immer nur einer drin!
-        }
+
+        //Verknüpfungen über Epsilon - Kanten
         for(Vertex v : getVertices()) {
             String name = v.getName();
             Collection<Vertex> next = new HashSet<>(){{add(v);}};
@@ -72,12 +53,34 @@ public class NFAImpl extends GraphImpl implements NFA {
                 }
             }
         }
+
+        //Start-Knoten bedenken.
+        State startknoten = null;
+        for(Vertex v : getStart()) {
+            boolean exists = false;
+            for(State s : newStates.keySet()) {
+                if(SetOperations.contains(newStates.get(s), v)) {
+                    startknoten = s;
+                    exists = true;
+                    break;
+                }
+            }
+            if(!exists) {
+                startknoten = new State(v.getName());
+                newStates.put(startknoten, getStart());
+                break; //Nach konstruktor ist hier sowieso immer nur einer drin!
+            }
+        }
+
+        //Verknüpfungen über nicht Epsilon-Kanten
         Map<State, Collection<Vertex>> roots = new HashMap<>(newStates);
         Map<State, Collection<? extends Vertex>> leafs = new HashMap<>();
         Collection<Edge> newEdges = new HashSet<>();
         State trap = new State("Falle");
         for(Character c : getAlphabet(getVertices())) {
-            newEdges.add(new EdgeImpl(trap, c, trap));
+            if(c != null) {
+                newEdges.add(new EdgeImpl(trap, c, trap));
+            }
         }
         int size;
         do {
@@ -116,22 +119,48 @@ public class NFAImpl extends GraphImpl implements NFA {
                 for(Vertex leaf : leafs.get(superState)) {
                     roots.get(superState).add((State) leaf);
                     newStates.get(superState).add((State) leaf);
-                    if(((State) leaf).getAcceptence() == State.Acceptance.ACCEPTING) {
-                        superState.setAcceptance(State.Acceptance.ACCEPTING);
-                    }
                 }
             }
             leafs.clear();
         } while (size < newStates.keySet().size());
-        for(State superState : newStates.keySet()) {
-            if(SetOperations.contains(getStart(),superState)) {
-                setStart(new HashSet<>(){{add(superState);}});
-                break;
+
+        //Akzeptanzen festlegen
+        for(State superstate : newStates.keySet()) {
+            for(Vertex v : newStates.get(superstate)) {
+                if(((State) v).getAcceptence() == State.Acceptance.ACCEPTING) {
+                    superstate.setAcceptance(State.Acceptance.ACCEPTING);
+                }
             }
         }
+
+        //Graph neu Aufbauen:
+        State start = startknoten;
+        setStart(new HashSet<>(){{add(start);}});
         for(Edge e : newEdges) {
             addEdge(e);
         }
+        rename('q');
+    }
+    private void rename(Character c) {
+        int i = 0;
+        for(State s : states()) {
+            if(!s.getName().equals("Falle")) {
+                s.setName(c.toString() + i);
+                i++;
+            }
+        }
+    }
+    private void renameAll(Character c) {
+        int i = 0;
+        for(State s : states()) {
+            s.setName(c.toString() + i);
+            i++;
+        }
+    }
+    private NFAImpl getRenamedClone(Character c) {
+        NFAImpl clone = this.clone();
+        clone.renameAll(c);
+        return clone;
     }
     private Set<State> states() {
         Set<State> states = new HashSet<>();
@@ -147,7 +176,6 @@ public class NFAImpl extends GraphImpl implements NFA {
             return (State) this.getVertex(name);
         }
     }
-
     @Override
     public Set<String> getStates() {
         Set<String> strings = new HashSet<String>();
@@ -156,7 +184,6 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
         return strings;
     }
-
     @Override
     public Collection<Transition> getTransitions() {
         Collection<Transition> transitions = new HashSet<>();
@@ -165,7 +192,6 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
         return transitions;
     }
-
     @Override
     public Set<String> getAcceptingStates() {
         Set<String> strings = new HashSet<String>();
@@ -209,31 +235,40 @@ public class NFAImpl extends GraphImpl implements NFA {
         if(this.getAcceptingStates().isEmpty()){
             throw new FinalizedStateException("NFA has no edges");
         }
-        NFAImpl unionNFA = new NFAImpl("q0");
-        ((NFAImpl) other).getState(other.getInitialState()).setName("q1");
-        unionNFA.addEdge(new EdgeImpl(unionNFA.getState("q0"), null, ((NFAImpl) other).getState(other.getInitialState())));
-        unionNFA.addEdge(new EdgeImpl(unionNFA.getState("q0"), null, this.getState(this.getInitialState())));
-        unionNFA.finalizeAutomaton();
-        this.finalizeAutomaton();
-        other.finalizeAutomaton();
+        NFAImpl thisClone = this.getRenamedClone('q');
+        NFAImpl otherClone = ((NFAImpl) other).getRenamedClone('k');
+        NFAImpl unionNFA = new NFAImpl("Start");
+        unionNFA.addEdge(new EdgeImpl(unionNFA.getState(unionNFA.getInitialState()), null, otherClone.getState(otherClone.getInitialState())));
+        unionNFA.addEdge(new EdgeImpl(unionNFA.getState(unionNFA.getInitialState()), null, thisClone.getState(thisClone.getInitialState())));
+        unionNFA.rename('q');
+
         return unionNFA;
     }
     @Override
     public NFA intersection(NFA other) throws FinalizedStateException {
-        NFAImpl clone = (NFAImpl) this.clone();
-        clone.complement();
-        ((NFAImpl) other).complement();
-        clone.union(other);
-        clone.complement();
-        System.out.println(clone);
-        return clone;
+        Collection<Character> thisAlphabet = this.getAlphabet(getVertices());
+        Collection<Character> otherAlphabet = ((NFAImpl) other).getAlphabet(((NFAImpl) other).getVertices());
+        thisAlphabet.retainAll(otherAlphabet);
+        if(thisAlphabet.isEmpty()) {
+            return new NFAImpl("Falle");
+        } else {
+            NFAImpl thisClone = getRenamedClone('q');
+            NFAImpl thisComplement = (NFAImpl) thisClone.complement();
+            thisComplement.renameAll('q');
+            NFAImpl otherClone = ((NFAImpl) other).getRenamedClone('k');
+            NFAImpl otherComplement = (NFAImpl) otherClone.complement();
+            otherComplement.renameAll('k');
+            NFAImpl union = (NFAImpl) thisComplement.union(otherComplement);
+            NFAImpl unionComplement = (NFAImpl) union.complement();
+            return unionComplement;
+        }
     }
     @Override
     public NFA concatenation(NFA other) throws FinalizedStateException {
         if(this.getAcceptingStates().isEmpty()){
             throw new FinalizedStateException("NFA has no edges");
         }
-        NFAImpl clone = (NFAImpl) this.clone();
+        NFAImpl clone = this.clone();
         for (String stateName : clone.getStates()) {
             if(stateName.equals("START")){
                 clone.getState(stateName).setName("q0");
@@ -241,7 +276,6 @@ public class NFAImpl extends GraphImpl implements NFA {
                 clone.getState(stateName).setName("q1");
             }
         }
-
         for (String stateName : other.getStates()) {
             if(stateName.equals("START")){
                 ((NFAImpl) other).getState(stateName).setName("q2");
@@ -249,14 +283,11 @@ public class NFAImpl extends GraphImpl implements NFA {
                 ((NFAImpl) other).getState(stateName).setName("q3");
             }
         }
-
         for(String acceptingStateName : clone.getAcceptingStates()){
             clone.getState(acceptingStateName).setAcceptance(State.Acceptance.DENYING);
         }
-
         clone.addEdge(new EdgeImpl(clone.getState("q1"), null, ((NFAImpl) other).getState(other.getInitialState())));
-        clone.finalizeAutomaton();
-
+        clone.rename('q');
         return clone;
     }
     @Override
@@ -271,6 +302,7 @@ public class NFAImpl extends GraphImpl implements NFA {
         for (String acceptingStateName : this.getAcceptingStates()) {
             this.addEdge(new EdgeImpl(this.getState(acceptingStateName), null, this.getState("q1")));
         }
+        starNFA.rename('q');
         starNFA.finalizeAutomaton();
         return starNFA;
     }
@@ -279,8 +311,9 @@ public class NFAImpl extends GraphImpl implements NFA {
         if(this.getAcceptingStates().isEmpty()){
             throw new FinalizedStateException("NFA has no edges");
         }
-        NFAImpl plusNFA = (NFAImpl) this.clone();
+        NFAImpl plusNFA = this.clone();
         plusNFA.kleeneStar();
+        plusNFA.rename('q');
         plusNFA.finalizeAutomaton();
         this.finalizeAutomaton();
         return plusNFA;
@@ -290,7 +323,7 @@ public class NFAImpl extends GraphImpl implements NFA {
         if(this.getAcceptingStates().isEmpty()){
             throw new FinalizedStateException("NFA has no edges");
         }
-        NFAImpl clone = (NFAImpl) this.clone();
+        NFAImpl clone = this.clone();
         clone.toDFA();
         for (State s : clone.states()) {
             if (s.getAcceptence() == State.Acceptance.ACCEPTING) {
@@ -300,65 +333,9 @@ public class NFAImpl extends GraphImpl implements NFA {
             }
         }
         clone.finalizeAutomaton();
-        return clone;
-        /*
-        System.out.println(this);
-        NFAImpl clone = (NFAImpl) this.clone();
-        clone.getState("ACCEPT").setName("q0");
-        char[] realAlphabet = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-        char alphabet = (Character) clone.getAlphabet(clone.getVertices()).toArray()[0];
-        for (char c : realAlphabet){
-            clone.addEdge(new EdgeImpl(clone.getState("q0"), c, clone.getState("qf")));
-            clone.addEdge(new EdgeImpl(clone.getState("qf"), c, clone.getState("qf")));
-            if (c != alphabet){
-                clone.addEdge(new EdgeImpl(clone.getState("START"), c, clone.getState("qf")));
-            }
-        }
-        for (State s : clone.states()) {
-            if (s.getAcceptence() == State.Acceptance.ACCEPTING) {
-                s.setAcceptance(State.Acceptance.DENYING);
-            } else if (s.getAcceptence() == State.Acceptance.DENYING) {
-                s.setAcceptance(State.Acceptance.ACCEPTING);
-            }
-        }
-        clone.getState("qf").setAcceptance(State.Acceptance.ACCEPTING);
-        System.out.println(clone);
-        return clone;
-         */
-    }
-
-    /*
-        //Zuerst in DFA, dann in das Komplement des DFAs. Der ist ja selbst auch ein NFA.
-        Graph graph = clone();
-        Vertex start = (Vertex) graph.getStart().toArray()[0];
-        NFAImpl clone = new NFAImpl(start.getName());
-        clone.setStart(new HashSet<>(){{add(start);}});
-        System.out.println("Aktueller NFA:");
-        System.out.println(this);
-        System.out.println();
-        System.out.println("Geklonter NFA:");
-        System.out.println(clone);
-        clone.toDFA();
-        System.out.println();
-        System.out.println("NFA in DFA:");
-        System.out.println(clone);
-        clone.invert();
-        System.out.println();
-        System.out.println("DFA invertiert:");
-        System.out.println(clone);
-        for (State s : clone.states()) {
-            if (s.getAcceptence() == State.Acceptance.ACCEPTING) {
-                s.setAcceptance(State.Acceptance.DENYING);
-            } else if (s.getAcceptence() == State.Acceptance.DENYING) {
-                s.setAcceptance(State.Acceptance.ACCEPTING);
-            }
-        }
-        System.out.println();
-        System.out.println("Akzeptanz angepasst:");
-        System.out.println(clone);
+        clone.rename('q');
         return clone;
     }
-     */
     private enum AutomatonStates {
         EDITABLE,
         NOT_EDITABLE
@@ -431,7 +408,7 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
 
     @Override
-    public NFA clone() {
+    public NFAImpl clone() {
         Map<Vertex, State> clonedStates = new HashMap<>();
         for(State s : this.states()) {
             State clone = new State(s.getName());

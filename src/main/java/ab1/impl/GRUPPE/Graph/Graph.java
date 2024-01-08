@@ -16,10 +16,6 @@ public interface Graph {
     public void addVertex(Vertex v);
     public void addEdge(Edge edge);
     public Vertex getVertex(String name);
-    public Graph getSubGraph(Vertex v);
-    public void remove(Vertex v);
-    public void remove(Edge e);
     public void remove(Graph g);
-    //public Graph clone();
     public void invert();
 }
