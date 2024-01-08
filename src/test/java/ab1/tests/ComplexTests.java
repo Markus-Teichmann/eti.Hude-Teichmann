@@ -42,9 +42,6 @@ public class ComplexTests {
 
         var testInstance = nfaA.intersection(nfaB);
 
-        System.out.println("testInstance");
-        System.out.println(testInstance);
-
         assertFalse(testInstance.acceptsWord("a"));
         assertFalse(testInstance.acceptsWord("b"));
         assertFalse(testInstance.acceptsWord("ab"));
@@ -118,14 +115,8 @@ public class ComplexTests {
     @Test
     public void complement1Test() {
         var nfaA = buildCharLanguage('a');
-        //System.out.println("nfaA");
-        //System.out.println(nfaA);
 
-        //System.out.println("Testanfang");
         var testInstance = nfaA.complement();
-
-        //System.out.println("testInstance");
-        //System.out.println(testInstance);
 
         assertFalse(testInstance.acceptsWord("a"));
         assertTrue(testInstance.acceptsWord("aa"));
