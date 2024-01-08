@@ -58,7 +58,7 @@ public class FinalizeTests {
     @Test
     public void finalize4Test() {
         var instance = factory.buildNFA("START");
-
+        System.out.println(instance);
         assertThrows(
                 FinalizedStateException.class,
                 instance::kleeneStar
@@ -68,7 +68,7 @@ public class FinalizeTests {
     @Test
     public void finalize5Test() {
         var instance = factory.buildNFA("START");
-
+        System.out.println(instance.isFinalized()); // liefert false
         assertThrows(
                 FinalizedStateException.class,
                 instance::plusOperator

@@ -206,11 +206,16 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA union(NFA other) throws FinalizedStateException {
+        if(this.getAcceptingStates().isEmpty()){
+            throw new FinalizedStateException("Automaton finalized");
+        }
         NFAImpl unionNFA = new NFAImpl("q0");
         ((NFAImpl) other).getState(other.getInitialState()).setName("q1");
         unionNFA.addEdge(new EdgeImpl(unionNFA.getState("q0"), null, ((NFAImpl) other).getState(other.getInitialState())));
         unionNFA.addEdge(new EdgeImpl(unionNFA.getState("q0"), null, this.getState(this.getInitialState())));
-
+        unionNFA.finalizeAutomaton();
+        this.finalizeAutomaton();
+        other.finalizeAutomaton();
         return unionNFA;
     }
     @Override
@@ -225,6 +230,9 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
     @Override
     public NFA concatenation(NFA other) throws FinalizedStateException {
+        if(this.getAcceptingStates().isEmpty()){
+            throw new FinalizedStateException("Automaton finalized");
+        }
         NFAImpl clone = (NFAImpl) this.clone();
         for (String stateName : clone.getStates()) {
             if(stateName.equals("START")){
@@ -247,12 +255,15 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
 
         clone.addEdge(new EdgeImpl(clone.getState("q1"), null, ((NFAImpl) other).getState(other.getInitialState())));
-
+        clone.finalizeAutomaton();
 
         return clone;
     }
     @Override
     public NFA kleeneStar() throws FinalizedStateException {
+        if(this.getEdges(this.getVertices()).isEmpty()){
+            throw new FinalizedStateException("Automaton finalized");
+        }
         NFAImpl starNFA = new NFAImpl("q0");
         starNFA.getState("q0").setAcceptance(State.Acceptance.ACCEPTING);
         this.getState("START").setName("q1");
@@ -260,17 +271,25 @@ public class NFAImpl extends GraphImpl implements NFA {
         for (String acceptingStateName : this.getAcceptingStates()) {
             this.addEdge(new EdgeImpl(this.getState(acceptingStateName), null, this.getState("q1")));
         }
-
+        starNFA.finalizeAutomaton();
         return starNFA;
     }
     @Override
     public NFA plusOperator() throws FinalizedStateException {
+        if(this.getAcceptingStates().isEmpty()){
+            throw new FinalizedStateException("Automaton finalized");
+        }
         NFAImpl plusNFA = (NFAImpl) this.clone();
         plusNFA.kleeneStar();
+        plusNFA.finalizeAutomaton();
+        this.finalizeAutomaton();
         return plusNFA;
     }
     @Override
     public NFA complement() throws FinalizedStateException {
+        if(this.getAcceptingStates().isEmpty()){
+            throw new FinalizedStateException("Automaton finalized");
+        }
         NFAImpl clone = (NFAImpl) this.clone();
         clone.toDFA();
         for (State s : clone.states()) {
@@ -280,6 +299,7 @@ public class NFAImpl extends GraphImpl implements NFA {
                 s.setAcceptance(State.Acceptance.ACCEPTING);
             }
         }
+        clone.finalizeAutomaton();
         return clone;
         /*
         System.out.println(this);
@@ -347,11 +367,11 @@ public class NFAImpl extends GraphImpl implements NFA {
     private AutomatonStates automatonStates;
     @Override
     public boolean isFinalized() {
-        return automatonStates == AutomatonStates.NOT_EDITABLE;
+        return this.automatonStates == AutomatonStates.NOT_EDITABLE;
     }
     @Override
     public void finalizeAutomaton() {
-        automatonStates = AutomatonStates.NOT_EDITABLE;
+        this.automatonStates = AutomatonStates.NOT_EDITABLE;
     }
     @Override
     public boolean isFinite() {

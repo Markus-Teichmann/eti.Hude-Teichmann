@@ -1,5 +1,6 @@
 package ab1.impl.GRUPPE.Graph.impl;
 
+import ab1.FinalizedStateException;
 import ab1.impl.GRUPPE.Graph.Edge;
 import ab1.impl.GRUPPE.Graph.Graph;
 import ab1.impl.GRUPPE.Graph.Vertex;
@@ -196,7 +197,7 @@ public class GraphImpl implements Graph {
         }
     }
     @Override
-    public void addEdge(Edge edge) {
+    public void addEdge(Edge edge){
         if(!contains(edge)) {
             edge.getStartVertex().addNext(edge.getTransition(), edge.getEndVertex());
             edge.getEndVertex().addPrev(edge.getTransition(), edge.getStartVertex());
