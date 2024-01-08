@@ -207,7 +207,7 @@ public class NFAImpl extends GraphImpl implements NFA {
     @Override
     public NFA union(NFA other) throws FinalizedStateException {
         if(this.getAcceptingStates().isEmpty()){
-            throw new FinalizedStateException("Automaton finalized");
+            throw new FinalizedStateException("NFA has no edges");
         }
         NFAImpl unionNFA = new NFAImpl("q0");
         ((NFAImpl) other).getState(other.getInitialState()).setName("q1");
@@ -231,7 +231,7 @@ public class NFAImpl extends GraphImpl implements NFA {
     @Override
     public NFA concatenation(NFA other) throws FinalizedStateException {
         if(this.getAcceptingStates().isEmpty()){
-            throw new FinalizedStateException("Automaton finalized");
+            throw new FinalizedStateException("NFA has no edges");
         }
         NFAImpl clone = (NFAImpl) this.clone();
         for (String stateName : clone.getStates()) {
@@ -262,7 +262,7 @@ public class NFAImpl extends GraphImpl implements NFA {
     @Override
     public NFA kleeneStar() throws FinalizedStateException {
         if(this.getEdges(this.getVertices()).isEmpty()){
-            throw new FinalizedStateException("Automaton finalized");
+            throw new FinalizedStateException("NFA has no edges");
         }
         NFAImpl starNFA = new NFAImpl("q0");
         starNFA.getState("q0").setAcceptance(State.Acceptance.ACCEPTING);
@@ -277,7 +277,7 @@ public class NFAImpl extends GraphImpl implements NFA {
     @Override
     public NFA plusOperator() throws FinalizedStateException {
         if(this.getAcceptingStates().isEmpty()){
-            throw new FinalizedStateException("Automaton finalized");
+            throw new FinalizedStateException("NFA has no edges");
         }
         NFAImpl plusNFA = (NFAImpl) this.clone();
         plusNFA.kleeneStar();
@@ -288,7 +288,7 @@ public class NFAImpl extends GraphImpl implements NFA {
     @Override
     public NFA complement() throws FinalizedStateException {
         if(this.getAcceptingStates().isEmpty()){
-            throw new FinalizedStateException("Automaton finalized");
+            throw new FinalizedStateException("NFA has no edges");
         }
         NFAImpl clone = (NFAImpl) this.clone();
         clone.toDFA();
