@@ -129,6 +129,9 @@ public class VertexImpl implements Vertex {
             }
         }
     }
+    /*
+        Gibt true zurück, wenn die Namen der Knoten übereinstimmen.
+     */
     @Override
     public boolean equals(Object o) {
         if(o instanceof Vertex) {

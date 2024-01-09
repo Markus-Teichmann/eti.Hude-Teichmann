@@ -23,6 +23,9 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
         return false;
     }
+    /*
+        Wandelt den aktuellen NFA in einen DFA um.
+     */
     private void toDFA() {
         //Startvorbereitungen
         setUnconnected(null);
@@ -138,6 +141,10 @@ public class NFAImpl extends GraphImpl implements NFA {
         }
         rename('q');
     }
+    /*
+        Benennt alle Knoten außer dem Fallen Knoten um.
+        @param c Ist der Name der Knoten die werden dann durchnummeriert.
+     */
     private void rename(Character c) {
         int i = 0;
         for(State s : states()) {
@@ -147,6 +154,10 @@ public class NFAImpl extends GraphImpl implements NFA {
             }
         }
     }
+    /*
+        Benennt jeden Knoten auch den Fallen Knoten um.
+        @param c Ist der Name der Knoten die werden dann durchnummeriert.
+     */
     private void renameAll(Character c) {
         int i = 0;
         for(State s : states()) {
@@ -154,6 +165,10 @@ public class NFAImpl extends GraphImpl implements NFA {
             i++;
         }
     }
+    /*
+        Gibt einen Klon des aktuellen NFA zurück, bei dem alle Knoten umbeannt wurden.
+        @param c Ist der Name der Knoten die werden dann durchnummeriert.
+     */
     private NFAImpl getRenamedClone(Character c) {
         NFAImpl clone = this.clone();
         clone.renameAll(c);
@@ -264,7 +279,6 @@ public class NFAImpl extends GraphImpl implements NFA {
     }
 
     // Schnitt zweier NFAs
-    // TODO Markus (ich glaube du kennst dich da besser aus :D)
     @Override
     public NFA intersection(NFA other) throws FinalizedStateException {
         if(this.getAcceptingStates().isEmpty()){
@@ -400,7 +414,10 @@ public class NFAImpl extends GraphImpl implements NFA {
         this.automatonStates = AutomatonStates.NOT_EDITABLE;
     }
 
-    //TODO Markus
+    /*
+        Liefert true, wenn die durch den NFA erzeugte Sprache endlich ist.
+        Es darf also keinen Zyklus mit verbundenem akzeptierendem Status geben.
+     */
     @Override
     public boolean isFinite() {
         Set<State> poi = new HashSet<>();
@@ -421,7 +438,9 @@ public class NFAImpl extends GraphImpl implements NFA {
         return true;
     }
 
-    //TODO Markus
+    /*
+        Liefert true zurück, wenn einer der möglichen Pfade auf einem akzeptierenden Zustand endet.
+     */
     @Override
     public boolean acceptsWord(String word) {
         Collection<Vertex> roots = new HashSet<>(getStart());
@@ -460,7 +479,6 @@ public class NFAImpl extends GraphImpl implements NFA {
         return false;
     }
 
-    //TODO Markus
     @Override
     public NFAImpl clone() {
         Map<Vertex, State> clonedStates = new HashMap<>();

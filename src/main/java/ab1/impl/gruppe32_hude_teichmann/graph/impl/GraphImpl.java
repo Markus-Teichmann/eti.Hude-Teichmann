@@ -50,6 +50,9 @@ public class GraphImpl implements Graph {
     public Collection<Vertex> getStart() {
         return start;
     }
+    /*
+        Gibt alle Knoten, ob Verbunden oder nicht zurück.
+     */
     @Override
     public Collection<Vertex> getVertices() {
         Collection<Vertex> connected = getProximity(null, null, start);
@@ -61,12 +64,18 @@ public class GraphImpl implements Graph {
         }
         return connected;
     }
+    /*
+        Gibt alle möglichen Kanten zurück die von den möglichen Knoten vertices aus beschritten werden könnten.
+     */
     @Override
     public Collection<Edge> getEdges(Collection<Vertex> vertices) {
         Collection<Edge> edges = getForwardEdges(vertices);
         SetOperations.addAll(edges, getBackwardEdges(vertices));
         return edges;
     }
+    /*
+        Gibt alle möglichen Übergänge die von den möglichen Knoten vertices aus beschritten werden könnten.
+     */
     @Override
     public Collection<Character> getAlphabet(Collection<Vertex> vertices) {
         Collection<Character> alphabet = new HashSet<>();
@@ -76,7 +85,16 @@ public class GraphImpl implements Graph {
         return alphabet;
     }
     /*
-        @param radius Ist radius == null so ist es ein unbeschränkter Radius.
+        Diese Methode gibt alle Knoten die von den Startknoten aus start über die Kanten transitions im Radius radius
+        erreicht werden zurück.
+
+        Anmerkung: In dieser Implementierung wird sehr darauf geachtet, dass die Startknoten wirklich nur dann zurück
+        gegeben werden, wenn sie von den Startknoten selbs aus erreichbar sind. => In diesem Fall haben wir einen
+        Zyklus.
+
+        @param radius       Ist radius == null, so ist es ein unbeschränkter Radius.
+        @param transitions  Ist transitions == null, so werden alle möglichen Kanten berücksichtigt.
+        @param start        Eine Liste an Knoten von denen aus alle weiteren Knoten erreicht werden sollen.
     */
     @Override
     public Collection<Vertex> getProximity(Integer radius, Collection<Character> transitions, Collection<Vertex> start) {
@@ -214,6 +232,12 @@ public class GraphImpl implements Graph {
         }
         return clone;
     }
+    /*
+        Diese Methode gibt einen Graphen zurück, bei denen alle Kanten umgedreht wurden.
+
+        Sie wird für den NFA zwar überhaupt nicht gebraucht, wurde aber trotzdem implementiert und getestet.
+        Hier hätte man sich einiges an Zeit sparen können. ^^
+     */
     @Override
     public void invert() {
         if(unconnected != null) {
